@@ -1,4 +1,25 @@
 ernestdefoe-projects:
+  # Server-side validation / error messages (shown to the user on a bad request).
+  api:
+    title_required: "The title is required."
+    title_max: "The title must be at most 255 characters."
+    excerpt_max: "The short description must be at most {max} characters."
+    image_invalid: "The image URL is not valid."
+    field_required: "{field} is required."
+    field_number: "{field} must be a number."
+    field_date: "{field} must be a valid date."
+    field_url: "{field} must be a valid URL."
+    field_choice: "{field} has an invalid choice."
+    link_invalid: "One of the links is not a valid URL."
+    link_domain: "The {button} link must point to an allowed domain."
+    link_required: "The {button} link is required."
+    category_name_required: "The category name is required."
+    field_name_required: "The field name is required."
+    button_label_required: "The button label is required."
+    upload_none: "No file was uploaded."
+    upload_too_large: "The image must be at most {max} MB."
+    upload_type: "Only JPG, PNG, GIF or WebP images are allowed."
+
   forum:
     nav: "Projects"
     page_title: "Projects"

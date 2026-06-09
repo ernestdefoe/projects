@@ -4,6 +4,7 @@ namespace ErnestDefoe\Projects\Api\Controller;
 
 use Flarum\Foundation\ValidationException;
 use Flarum\Http\RequestUtil;
+use Flarum\Locale\TranslatorInterface;
 use Illuminate\Contracts\Filesystem\Factory;
 use Illuminate\Support\Str;
 use Laminas\Diactoros\Response\JsonResponse;
@@ -26,8 +27,15 @@ class UploadImageController implements RequestHandlerInterface
         'image/webp' => 'webp',
     ];
 
-    public function __construct(private Factory $filesystem)
+    public function __construct(
+        private Factory $filesystem,
+        private TranslatorInterface $translator,
+    ) {
+    }
+
+    private function t(string $key, array $params = []): string
     {
+        return $this->translator->trans('ernestdefoe-projects.api.' . $key, $params);
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -40,11 +48,11 @@ class UploadImageController implements RequestHandlerInterface
         $file = self::firstFile($request->getUploadedFiles());
 
         if (! $file || $file->getError() !== UPLOAD_ERR_OK) {
-            throw new ValidationException(['image' => 'No file was uploaded.']);
+            throw new ValidationException(['image' => $this->t('upload_none')]);
         }
 
         if ($file->getSize() > self::MAX_BYTES) {
-            throw new ValidationException(['image' => 'The image must be at most 4 MB.']);
+            throw new ValidationException(['image' => $this->t('upload_too_large', ['{max}' => (int) (self::MAX_BYTES / 1024 / 1024)])]);
         }
 
         $mime = strtolower((string) $file->getClientMediaType());
@@ -55,7 +63,7 @@ class UploadImageController implements RequestHandlerInterface
             $mime = $info['mime'] ?? '';
         }
         if (! isset(self::MIME_EXT[$mime])) {
-            throw new ValidationException(['image' => 'Only JP, PNG, GIF or WebP images are allowed.']);
+            throw new ValidationException(['image' => $this->t('upload_type')]);
         }
 
         $disk = $this->filesystem->disk('flarum-assets');

@@ -6,6 +6,7 @@ use ErnestDefoe\Projects\Api\DefinitionSerializer;
 use ErnestDefoe\Projects\Model\ProjectButton;
 use Flarum\Foundation\ValidationException;
 use Flarum\Http\RequestUtil;
+use Flarum\Locale\TranslatorInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laminas\Diactoros\Response\JsonResponse;
@@ -16,6 +17,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 /** POST /api/projects/config/buttons  +  PATCH …/{id} — create/update a button slot (admin). */
 class SaveButtonController implements RequestHandlerInterface
 {
+    public function __construct(private TranslatorInterface $translator)
+    {
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         RequestUtil::getActor($request)->assertAdmin();
@@ -27,7 +32,7 @@ class SaveButtonController implements RequestHandlerInterface
 
         $label = trim((string) Arr::get($attrs, 'label', ''));
         if ($label === '') {
-            throw new ValidationException(['label' => 'The button label is required.']);
+            throw new ValidationException(['label' => $this->translator->trans('ernestdefoe-projects.api.button_label_required')]);
         }
         $button->label = $label;
 

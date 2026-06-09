@@ -8,6 +8,7 @@ use ErnestDefoe\Projects\Model\ProjectField;
 use ErnestDefoe\Projects\Model\ProjectFieldValue;
 use ErnestDefoe\Projects\Model\ProjectLink;
 use Flarum\Foundation\ValidationException;
+use Flarum\Locale\TranslatorInterface;
 use Flarum\User\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -21,6 +22,12 @@ class ProjectInput
 {
     private const EXCERPT_MAX = 280;
 
+    /** Translate an api.* error message in the actor's locale. */
+    private static function t(string $key, array $params = []): string
+    {
+        return resolve(TranslatorInterface::class)->trans('ernestdefoe-projects.api.' . $key, $params);
+    }
+
     /** Apply scalar attributes to the (unsaved or existing) project. */
     public static function apply(Project $project, array $attrs, bool $creating): void
     {
@@ -29,9 +36,9 @@ class ProjectInput
         if (array_key_exists('title', $attrs) || $creating) {
             $title = trim((string) Arr::get($attrs, 'title', ''));
             if ($title === '') {
-                $errors['title'] = 'The title is required.';
+                $errors['title'] = self::t('title_required');
             } elseif (mb_strlen($title) > 255) {
-                $errors['title'] = 'The title must be at most 255 characters.';
+                $errors['title'] = self::t('title_max');
             } else {
                 $project->title = $title;
                 if ($creating || empty($project->slug)) {
@@ -43,7 +50,7 @@ class ProjectInput
         if (array_key_exists('excerpt', $attrs)) {
             $excerpt = trim((string) $attrs['excerpt']);
             if (mb_strlen($excerpt) > self::EXCERPT_MAX) {
-                $errors['excerpt'] = 'The short description must be at most ' . self::EXCERPT_MAX . ' characters.';
+                $errors['excerpt'] = self::t('excerpt_max', ['{max}' => self::EXCERPT_MAX]);
             }
             $project->excerpt = $excerpt !== '' ? $excerpt : null;
         }
@@ -56,7 +63,7 @@ class ProjectInput
         if (array_key_exists('image', $attrs)) {
             $image = trim((string) $attrs['image']);
             if ($image !== '' && ! self::isSafeUrl($image)) {
-                $errors['image'] = 'The image URL is not valid.';
+                $errors['image'] = self::t('image_invalid');
             }
             $project->image_path = $image !== '' ? $image : null;
         }
@@ -108,7 +115,7 @@ class ProjectInput
 
                 if ($value === null || $value === '') {
                     if ($field->is_required) {
-                        $errors['field_' . $field->key] = $field->name . ' is required.';
+                        $errors['field_' . $field->key] = self::t('field_required', ['{field}' => $field->name]);
                     }
                     $existing?->delete();
                     continue;
@@ -134,14 +141,14 @@ class ProjectInput
                     continue;
                 }
                 if (! self::isSafeUrl($url)) {
-                    $errors['link_' . $position] = 'One of the links is not a valid URL.';
+                    $errors['link_' . $position] = self::t('link_invalid');
                     continue;
                 }
 
                 $buttonId = (int) Arr::get($entry, 'buttonId', 0);
                 $button = $buttonId ? $buttons->get($buttonId) : null;
                 if ($button && ! $button->allowsUrl($url)) {
-                    $errors['link_' . $button->key] = 'The ' . $button->label . ' link must point to an allowed domain.';
+                    $errors['link_' . $button->key] = self::t('link_domain', ['{button}' => $button->label]);
                     continue;
                 }
 
@@ -166,7 +173,7 @@ class ProjectInput
             // Required buttons must be filled.
             foreach ($buttons as $button) {
                 if ($button->is_required && empty($seenButtons[$button->id])) {
-                    $errors['link_' . $button->key] = 'The ' . $button->label . ' link is required.';
+                    $errors['link_' . $button->key] = self::t('link_required', ['{button}' => $button->label]);
                 }
             }
         }
@@ -189,7 +196,7 @@ class ProjectInput
                 $raw = trim((string) $raw);
                 if ($raw === '') return null;
                 if (! is_numeric($raw)) {
-                    $errors['field_' . $field->key] = $field->name . ' must be a number.';
+                    $errors['field_' . $field->key] = self::t('field_number', ['{field}' => $field->name]);
                     return null;
                 }
                 return $raw;
@@ -197,7 +204,7 @@ class ProjectInput
                 $raw = trim((string) $raw);
                 if ($raw === '') return null;
                 if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw)) {
-                    $errors['field_' . $field->key] = $field->name . ' must be a valid date.';
+                    $errors['field_' . $field->key] = self::t('field_date', ['{field}' => $field->name]);
                     return null;
                 }
                 return $raw;
@@ -205,7 +212,7 @@ class ProjectInput
                 $raw = trim((string) $raw);
                 if ($raw === '') return null;
                 if (! self::isSafeUrl($raw)) {
-                    $errors['field_' . $field->key] = $field->name . ' must be a valid URL.';
+                    $errors['field_' . $field->key] = self::t('field_url', ['{field}' => $field->name]);
                     return null;
                 }
                 return $raw;
@@ -214,7 +221,7 @@ class ProjectInput
                 if ($raw === '') return null;
                 $options = array_map('strval', (array) ($field->options ?? []));
                 if ($options && ! in_array($raw, $options, true)) {
-                    $errors['field_' . $field->key] = $field->name . ' has an invalid choice.';
+                    $errors['field_' . $field->key] = self::t('field_choice', ['{field}' => $field->name]);
                     return null;
                 }
                 return $raw;

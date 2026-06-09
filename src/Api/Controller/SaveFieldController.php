@@ -6,6 +6,7 @@ use ErnestDefoe\Projects\Api\DefinitionSerializer;
 use ErnestDefoe\Projects\Model\ProjectField;
 use Flarum\Foundation\ValidationException;
 use Flarum\Http\RequestUtil;
+use Flarum\Locale\TranslatorInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laminas\Diactoros\Response\JsonResponse;
@@ -16,6 +17,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 /** POST /api/projects/config/fields  +  PATCH …/{id} — create/update a custom field (admin). */
 class SaveFieldController implements RequestHandlerInterface
 {
+    public function __construct(private TranslatorInterface $translator)
+    {
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         RequestUtil::getActor($request)->assertAdmin();
@@ -27,7 +32,7 @@ class SaveFieldController implements RequestHandlerInterface
 
         $name = trim((string) Arr::get($attrs, 'name', ''));
         if ($name === '') {
-            throw new ValidationException(['name' => 'The field name is required.']);
+            throw new ValidationException(['name' => $this->translator->trans('ernestdefoe-projects.api.field_name_required')]);
         }
         $field->name = $name;
 
