@@ -8,6 +8,7 @@ use ErnestDefoe\Projects\Event\ProjectWasPublished;
 use ErnestDefoe\Projects\Model\Project;
 use Flarum\Http\RequestUtil;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Arr;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -17,8 +18,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 /** PATCH /api/projects/{id} — update a project (author or moderator). */
 class UpdateProjectController implements RequestHandlerInterface
 {
-    public function __construct(private Dispatcher $events)
-    {
+    public function __construct(
+        private Dispatcher $events,
+        private ConnectionInterface $db,
+    ) {
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -35,9 +38,11 @@ class UpdateProjectController implements RequestHandlerInterface
         $wasPublished = $project->isPublished();
         $attrs = (array) Arr::get((array) $request->getParsedBody(), 'data.attributes', []);
 
-        ProjectInput::apply($project, $attrs, false);
-        $project->save();
-        ProjectInput::syncRelations($project, $attrs, $actor);
+        $this->db->transaction(function () use ($project, $attrs, $actor) {
+            ProjectInput::apply($project, $attrs, false);
+            $project->save();
+            ProjectInput::syncRelations($project, $attrs, $actor);
+        });
 
         if (! $wasPublished && $project->isPublished()) {
             $this->events->dispatch(new ProjectWasPublished($project, $actor));

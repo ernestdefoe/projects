@@ -19,6 +19,8 @@ class ProjectLink extends AbstractModel
 {
     protected $table = 'project_links';
 
+    protected $guarded = [];
+
     protected $casts = [
         'position'   => 'integer',
         'created_at' => 'datetime',

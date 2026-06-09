@@ -17,6 +17,8 @@ class ProjectFieldValue extends AbstractModel
 {
     protected $table = 'project_field_values';
 
+    protected $guarded = [];
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
