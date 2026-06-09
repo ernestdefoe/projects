@@ -17,9 +17,9 @@ export default class ProjectFormModal extends Modal {
   editing: Project | null = null;
 
   // form state
-  title = '';
+  titleText = '';
   excerpt = '';
-  content = '';
+  contentText = '';
   image: string | null = null;
   categoryIds: number[] = [];
   primaryCategoryId: number | null = null;
@@ -46,9 +46,9 @@ export default class ProjectFormModal extends Modal {
 
   prefill(p: Project) {
     this.editing = p;
-    this.title = p.title;
+    this.titleText = p.title;
     this.excerpt = p.excerpt || '';
-    this.content = p.content || '';
+    this.contentText = p.content || '';
     this.image = p.image || null;
     this.categoryIds = p.categories.map((c) => c.id);
     this.primaryCategoryId = p.primaryCategory?.id || null;
@@ -75,7 +75,7 @@ export default class ProjectFormModal extends Modal {
     return m('.Modal-body', [
       m('.Form-group', [
         m('label', t('form.title_label')),
-        m('input.FormControl', { value: this.title, oninput: (e: any) => (this.title = e.target.value), maxlength: 255 }),
+        m('input.FormControl', { value: this.titleText, oninput: (e: any) => (this.titleText = e.target.value), maxlength: 255 }),
       ]),
 
       m('.Form-group', [
@@ -110,7 +110,7 @@ export default class ProjectFormModal extends Modal {
 
       m('.Form-group', [
         m('label', t('form.content_label')),
-        m('textarea.FormControl', { rows: 6, value: this.content, oninput: (e: any) => (this.content = e.target.value) }),
+        m('textarea.FormControl', { rows: 6, value: this.contentText, oninput: (e: any) => (this.contentText = e.target.value) }),
       ]),
 
       this.cfg.categories.length ? this.categorySection() : null,
@@ -243,9 +243,9 @@ export default class ProjectFormModal extends Modal {
       .map(([buttonId, v]) => ({ buttonId: Number(buttonId), url: v.url.trim(), label: v.label.trim() }));
 
     const attrs = {
-      title: this.title.trim(),
+      title: this.titleText.trim(),
       excerpt: this.excerpt.trim(),
-      content: this.content,
+      content: this.contentText,
       image: this.image || '',
       categoryIds: this.categoryIds,
       primaryCategoryId: this.primaryCategoryId,

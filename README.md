@@ -17,6 +17,16 @@ Inspired by [this community request](https://discuss.flarum.org/d/39400-user-pro
 - **Profile integration** — a **Projects** tab on each member's profile, plus a featured-project badge (their main category's icon, with the project name on hover) next to their username everywhere.
 - **FoF Badges integration** *(optional)* — award a badge when a member's project is first published.
 
+## Screenshots
+
+| Browse page | Project detail |
+| --- | --- |
+| ![Projects browse page](screenshots/projects-page.png) | ![Project detail page](screenshots/project-detail.png) |
+
+| Submission form | Admin configuration |
+| --- | --- |
+| ![Submit project form](screenshots/submit-form.png) | ![Admin: categories, fields & buttons](screenshots/admin.png) |
+
 ## Permissions
 
 | Permission | Default |
