@@ -1,0 +1,49 @@
+/* Projects — admin styles */
+
+.ProjectsConfig {
+  margin-top: 10px;
+
+  &-section {
+    margin-bottom: 28px;
+    padding: 16px 18px;
+    background: var(--body-bg);
+    border: 1px solid var(--control-bg);
+    border-radius: 8px;
+  }
+
+  &-sectionHead {
+    margin-bottom: 12px;
+
+    h3 { margin: 0 0 2px; font-size: 16px; }
+  }
+
+  &-list {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+
+    &:hover { background: var(--control-bg); }
+  }
+
+  &-label i { margin-right: 6px; }
+  &-meta { color: var(--muted-color); font-size: 12px; }
+  &-req { color: #c53030; font-weight: 700; }
+  &-empty { color: var(--muted-color); padding: 8px 10px; font-style: italic; }
+  &-itemActions { display: flex; gap: 2px; flex-shrink: 0; }
+}
+
+.ProjectsFieldModal-inline {
+  display: flex;
+  gap: 12px;
+
+  > .Form-group { flex: 1; }
+}

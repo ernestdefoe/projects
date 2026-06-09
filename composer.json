@@ -1,0 +1,50 @@
+{
+  "name": "ernestdefoe/projects",
+  "description": "User Projects for Flarum 2 — a flexible showcase for creator communities (books, games, art, software…). Project cards with images, admin-defined categories & custom typed parameters, a domain-restricted button/link system, search & filters, optional moderation, likes, profile integration (Projects tab + featured-project badge), and FoF Badges integration.",
+  "keywords": ["flarum", "flarum-extension", "projects", "showcase", "portfolio", "creators"],
+  "type": "flarum-extension",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "ernestdefoe",
+      "email": "ernestdefoe@gmail.com"
+    }
+  ],
+  "homepage": "https://github.com/ernestdefoe/projects",
+  "support": {
+    "issues": "https://github.com/ernestdefoe/projects/issues",
+    "source": "https://github.com/ernestdefoe/projects"
+  },
+  "require": {
+    "php": "^8.3",
+    "flarum/core": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "ErnestDefoe\\Projects\\": "src/"
+    }
+  },
+  "extra": {
+    "flarum-extension": {
+      "title": "Projects",
+      "category": "feature",
+      "icon": {
+        "name": "fas fa-cubes",
+        "backgroundColor": "#5b3df5",
+        "color": "#fff"
+      },
+      "optional-dependencies": [
+        "fof/badges"
+      ]
+    },
+    "flarum-cli": {
+      "modules": {
+        "js": true,
+        "css": true,
+        "locale": true
+      }
+    }
+  },
+  "minimum-stability": "beta",
+  "prefer-stable": true
+}

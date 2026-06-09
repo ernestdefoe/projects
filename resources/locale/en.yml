@@ -1,0 +1,119 @@
+ernestdefoe-projects:
+  forum:
+    nav: "Projects"
+    page_title: "Projects"
+    add_project: "Add project"
+    search_placeholder: "Search projects…"
+    all_categories: "All categories"
+    load_more: "Load more"
+    empty: "No projects yet."
+    like: "Like"
+    yes: "Yes"
+    back: "Back to projects"
+    discuss: "Discuss on forum"
+    not_found: "This project could not be found."
+    confirm_delete: "Delete this project? This cannot be undone."
+    edit: "Edit"
+    delete: "Delete"
+
+    sort:
+      recent: "Most recent"
+      popular: "Most liked"
+      title: "Title (A–Z)"
+
+    status:
+      all: "All statuses"
+      pending: "Pending review"
+      published: "Published"
+      rejected: "Rejected"
+
+    moderate:
+      approve: "Approve"
+      reject: "Reject"
+      reason_prompt: "Reason for rejection (optional):"
+
+    profile:
+      tab: "Projects"
+      empty: "No projects to show."
+
+    form:
+      create_title: "Add a project"
+      edit_title: "Edit project"
+      title_label: "Title"
+      image_label: "Cover image"
+      image_upload: "Upload image"
+      image_change: "Change image"
+      image_remove: "Remove"
+      excerpt_label: "Short description"
+      excerpt_help: "{count} characters left."
+      content_label: "Details"
+      categories_label: "Categories"
+      primary_label: "Main category (shown as your profile badge)"
+      discussion_label: "Linked discussion"
+      discussion_placeholder: "Discussion ID (optional)"
+      links_label: "Links"
+      link_label_placeholder: "Custom label (optional)"
+      domain_hint: "Must link to: {domains}"
+      save: "Save changes"
+      create: "Submit project"
+
+  admin:
+    settings:
+      excerpt_limit: "Short-description character limit"
+      excerpt_limit_help: "Maximum length of the card description."
+      allow_adhoc_links: "Allow free-form links"
+      allow_adhoc_links_help: "Let authors add links beyond the defined button slots."
+      publish_badge_id: "FoF Badges: badge to award on publish"
+      publish_badge_id_help: "Requires fof/badges. Enter the badge ID to grant when a member's project is first published. Leave blank to disable."
+
+    permissions:
+      create: "Create projects"
+      skip_moderation: "Publish projects without moderation"
+      moderate: "Moderate projects"
+
+    config:
+      categories_title: "Categories"
+      categories_help: "Tags shown on project cards; the main one becomes the author's profile badge."
+      fields_title: "Custom parameters"
+      fields_help: "Extra typed fields authors fill in (e.g. Genre, Release date)."
+      buttons_title: "Button / link slots"
+      buttons_help: "Define the links projects can carry, optionally restricted to certain domains."
+      none: "None yet."
+      add: "Add"
+      save: "Save"
+      confirm_delete: "Delete this item?"
+
+      category_new: "New category"
+      category_edit: "Edit category"
+      field_new: "New parameter"
+      field_edit: "Edit parameter"
+      button_new: "New button slot"
+      button_edit: "Edit button slot"
+
+      field_name: "Name"
+      field_icon: "Icon (FontAwesome class)"
+      field_color: "Color"
+      field_description: "Description"
+      field_type: "Type"
+      field_options: "Options"
+      field_options_help: "One choice per line (for the Select type)."
+      field_prefix: "Prefix"
+      field_suffix: "Suffix"
+      field_required: "Required"
+      field_on_card: "Show on card"
+
+      button_label_field: "Default label"
+      button_domains: "Allowed domains"
+      button_domains_help: "One domain per line. Leave empty to allow any link."
+      button_custom_label: "Allow a custom label"
+      button_primary: "Render as primary button"
+      button_required: "Required"
+
+      types:
+        text: "Text"
+        textarea: "Paragraph"
+        number: "Number"
+        date: "Date"
+        url: "URL"
+        select: "Select"
+        boolean: "Yes / No"
