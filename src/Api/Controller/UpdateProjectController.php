@@ -2,13 +2,10 @@
 
 namespace ErnestDefoe\Projects\Api\Controller;
 
-use ErnestDefoe\Projects\Api\ProjectInput;
+use ErnestDefoe\Projects\Api\ProjectRepository;
 use ErnestDefoe\Projects\Api\ProjectSerializer;
-use ErnestDefoe\Projects\Event\ProjectWasPublished;
 use ErnestDefoe\Projects\Model\Project;
 use Flarum\Http\RequestUtil;
-use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Arr;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -19,8 +16,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 class UpdateProjectController implements RequestHandlerInterface
 {
     public function __construct(
-        private Dispatcher $events,
-        private ConnectionInterface $db,
+        private ProjectRepository $repository,
+        private ProjectSerializer $serializer,
     ) {
     }
 
@@ -35,21 +32,12 @@ class UpdateProjectController implements RequestHandlerInterface
             $actor->assertPermission(false);
         }
 
-        $wasPublished = $project->isPublished();
         $attrs = (array) Arr::get((array) $request->getParsedBody(), 'data.attributes', []);
 
-        $this->db->transaction(function () use ($project, $attrs, $actor) {
-            ProjectInput::apply($project, $attrs, false);
-            $project->save();
-            ProjectInput::syncRelations($project, $attrs, $actor);
-        });
+        $project = $this->repository->update($project, $attrs, $actor);
 
-        if (! $wasPublished && $project->isPublished()) {
-            $this->events->dispatch(new ProjectWasPublished($project, $actor));
-        }
+        $project->refresh()->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user']);
 
-        $project->refresh()->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes']);
-
-        return new JsonResponse(['data' => ProjectSerializer::serialize($project, $actor, true, $request)]);
+        return new JsonResponse(['data' => $this->serializer->serialize($project, $actor, true, $request)]);
     }
 }

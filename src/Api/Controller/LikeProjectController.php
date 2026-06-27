@@ -14,6 +14,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 /** POST /api/projects/{id}/like — toggle the actor's like on a project. */
 class LikeProjectController implements RequestHandlerInterface
 {
+    public function __construct(private ProjectSerializer $serializer)
+    {
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $actor = RequestUtil::getActor($request);
@@ -22,17 +26,21 @@ class LikeProjectController implements RequestHandlerInterface
         $id = (int) Arr::get($request->getQueryParams(), 'id');
         $project = Project::query()->whereVisibleTo($actor)->findOrFail($id);
 
+        // Toggle the pivot and adjust the denormalised count atomically. Using a
+        // query-builder increment/decrement (rather than reading count() and
+        // calling $project->save()) keeps the count correct under concurrent
+        // like/unlike and avoids firing the model's saved hook — a like must not
+        // recompute the author's featured-project snapshot.
         if ($project->likes()->where('users.id', $actor->id)->exists()) {
             $project->likes()->detach($actor->id);
+            Project::query()->whereKey($project->id)->where('likes_count', '>', 0)->decrement('likes_count');
         } else {
-            $project->likes()->attach($actor->id, ['created_at' => now()]);
+            $project->likes()->attach($actor->id, ['created_at' => \Carbon\Carbon::now()]);
+            Project::query()->whereKey($project->id)->increment('likes_count');
         }
 
-        $project->likes_count = $project->likes()->count();
-        $project->save();
+        $project->refresh()->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user']);
 
-        $project->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes']);
-
-        return new JsonResponse(['data' => ProjectSerializer::serialize($project, $actor)]);
+        return new JsonResponse(['data' => $this->serializer->serialize($project, $actor)]);
     }
 }

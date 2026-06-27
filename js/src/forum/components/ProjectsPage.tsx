@@ -21,6 +21,7 @@ export default class ProjectsPage extends Page {
   hasMore = false;
   page = 1;
   total = 0;
+  error: any = null;
 
   q = '';
   category = '';
@@ -45,8 +46,16 @@ export default class ProjectsPage extends Page {
     };
   }
 
+  /** Turn an app.request rejection into a human, status-aware message. */
+  errorText(e: any): any {
+    const status = e?.status ?? e?.response?.status;
+    if (status === 401 || status === 403) return t('load_error_forbidden');
+    return t('load_error');
+  }
+
   load() {
     this.loading = true;
+    this.error = null;
     this.page = 1;
     listProjects(this.params())
       .then((res) => {
@@ -56,7 +65,8 @@ export default class ProjectsPage extends Page {
         this.loading = false;
         m.redraw();
       })
-      .catch(() => {
+      .catch((e) => {
+        this.error = this.errorText(e);
         this.loading = false;
         m.redraw();
       });
@@ -73,8 +83,11 @@ export default class ProjectsPage extends Page {
         this.loadingMore = false;
         m.redraw();
       })
-      .catch(() => {
+      .catch((e) => {
+        // Keep the projects already shown; surface the failure as an alert.
+        this.page--;
         this.loadingMore = false;
+        app.alerts.show({ type: 'error' }, this.errorText(e));
         m.redraw();
       });
   }
@@ -90,12 +103,14 @@ export default class ProjectsPage extends Page {
       app.modal.show(() => import('flarum/forum/components/LogInModal'));
       return;
     }
-    likeProject(project.id).then((res) => {
-      const updated = res.data;
-      const i = this.projects.findIndex((p) => p.id === updated.id);
-      if (i >= 0) this.projects[i] = updated;
-      m.redraw();
-    });
+    likeProject(project.id)
+      .then((res) => {
+        const updated = res.data;
+        const i = this.projects.findIndex((p) => p.id === updated.id);
+        if (i >= 0) this.projects[i] = updated;
+        m.redraw();
+      })
+      .catch(() => app.alerts.show({ type: 'error' }, t('like_error')));
   }
 
   add() {
@@ -160,14 +175,20 @@ export default class ProjectsPage extends Page {
 
       this.loading
         ? m('.ProjectsPage-loading', m(LoadingIndicator, { size: 'large' }))
-        : this.projects.length
-          ? [
-              m('.ProjectsGrid', this.projects.map((p) => m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x) }))),
-              this.hasMore
-                ? m('.ProjectsPage-more', Button.component({ className: 'Button', loading: this.loadingMore, onclick: () => this.loadMore() }, t('load_more')))
-                : null,
-            ]
-          : m('.ProjectsPage-empty', [m('i.fas.fa-cubes'), m('p', t('empty'))]),
+        : this.error
+          ? m('.ProjectsPage-empty.ProjectsPage-error', [
+              m('i.fas.fa-circle-exclamation'),
+              m('p', this.error),
+              Button.component({ className: 'Button', onclick: () => this.load() }, t('retry')),
+            ])
+          : this.projects.length
+            ? [
+                m('.ProjectsGrid', this.projects.map((p) => m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x) }))),
+                this.hasMore
+                  ? m('.ProjectsPage-more', Button.component({ className: 'Button', loading: this.loadingMore, onclick: () => this.loadMore() }, t('load_more')))
+                  : null,
+              ]
+            : m('.ProjectsPage-empty', [m('i.fas.fa-cubes'), m('p', t('empty'))]),
     ]));
   }
 }

@@ -25,6 +25,8 @@ export default class ProjectFormModal extends Modal {
   primaryCategoryId: number | null = null;
   fieldValues: Record<number, string> = {};
   links: Record<number, { url: string; label: string }> = {};
+  coAuthorEntries: string[] = [];
+  newCoAuthor = '';
   discussionId = '';
 
   uploading = false;
@@ -53,6 +55,7 @@ export default class ProjectFormModal extends Modal {
     this.categoryIds = p.categories.map((c) => c.id);
     this.primaryCategoryId = p.primaryCategory?.id || null;
     this.discussionId = p.discussionId ? String(p.discussionId) : '';
+    this.coAuthorEntries = (p.coAuthors || []).map((a) => a.username || a.name || '').filter(Boolean);
     p.fields.forEach((f) => (this.fieldValues[f.id] = f.value));
     p.links.forEach((l) => {
       if (l.buttonId) this.links[l.buttonId] = { url: l.url, label: l.label || '' };
@@ -116,6 +119,7 @@ export default class ProjectFormModal extends Modal {
       this.cfg.categories.length ? this.categorySection() : null,
       this.cfg.fields.length ? this.fieldsSection() : null,
       this.cfg.buttons.length ? this.buttonsSection() : null,
+      this.coAuthorsSection(),
 
       m('.Form-group', [
         m('label', t('form.discussion_label')),
@@ -132,8 +136,14 @@ export default class ProjectFormModal extends Modal {
   }
 
   categorySection() {
+    const min = Number(app.forum.attribute('projectsMinCategories')) || 0;
+    const max = Number(app.forum.attribute('projectsMaxCategories')) || 0;
+
     return m('.Form-group.ProjectForm-categories', [
       m('label', t('form.categories_label')),
+      min > 0 || max > 0
+        ? m('span.helpText', t('form.categories_hint', { min, max: max || '∞' }))
+        : null,
       m('.ProjectForm-catChips', this.cfg.categories.map((c) => {
         const on = this.categoryIds.includes(c.id);
         return m('button.ProjectForm-catChip' + (on ? '.is-on' : ''), {
@@ -157,8 +167,17 @@ export default class ProjectFormModal extends Modal {
     ]);
   }
 
+  /** A field/button applies when it has no category restriction, or one of its
+   *  categories is currently selected on the project. */
+  appliesToSelected(categoryIds: number[]): boolean {
+    if (!categoryIds || !categoryIds.length) return true;
+    return categoryIds.some((id) => this.categoryIds.includes(id));
+  }
+
   fieldsSection() {
-    return m('.ProjectForm-fields', this.cfg.fields.map((f) => this.fieldInput(f)));
+    const fields = this.cfg.fields.filter((f) => this.appliesToSelected(f.categoryIds));
+    if (!fields.length) return null;
+    return m('.ProjectForm-fields', fields.map((f) => this.fieldInput(f)));
   }
 
   fieldInput(f: FieldDef) {
@@ -196,9 +215,11 @@ export default class ProjectFormModal extends Modal {
   }
 
   buttonsSection() {
+    const buttons = this.cfg.buttons.filter((b) => this.appliesToSelected(b.categoryIds));
+    if (!buttons.length) return null;
     return m('.ProjectForm-buttons', [
       m('label.ProjectForm-sectionLabel', t('form.links_label')),
-      ...this.cfg.buttons.map((b) => this.buttonInput(b)),
+      ...buttons.map((b) => this.buttonInput(b)),
     ]);
   }
 
@@ -218,10 +239,62 @@ export default class ProjectFormModal extends Modal {
     ]);
   }
 
+  coAuthorsSection() {
+    return m('.Form-group.ProjectForm-coAuthors', [
+      m('label', t('form.coauthors_label')),
+      m('span.helpText', t('form.coauthors_help')),
+      this.coAuthorEntries.length
+        ? m(
+            '.ProjectForm-coAuthorList',
+            this.coAuthorEntries.map((name, i) =>
+              m('span.ProjectForm-coAuthor', [
+                name,
+                m(
+                  'button.ProjectForm-coAuthorRemove',
+                  { type: 'button', title: t('form.image_remove'), onclick: () => this.coAuthorEntries.splice(i, 1) },
+                  m('i.fas.fa-xmark')
+                ),
+              ])
+            )
+          )
+        : null,
+      m('.ProjectForm-coAuthorAdd', [
+        m('input.FormControl', {
+          placeholder: t('form.coauthors_placeholder'),
+          value: this.newCoAuthor,
+          oninput: (e: any) => (this.newCoAuthor = e.target.value),
+          onkeydown: (e: any) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              this.addCoAuthor();
+            }
+          },
+        }),
+        Button.component({ className: 'Button', icon: 'fas fa-plus', onclick: () => this.addCoAuthor() }, t('form.coauthors_add')),
+      ]),
+    ]);
+  }
+
+  addCoAuthor() {
+    const v = this.newCoAuthor.trim();
+    if (v && !this.coAuthorEntries.includes(v) && this.coAuthorEntries.length < 10) {
+      this.coAuthorEntries.push(v);
+    }
+    this.newCoAuthor = '';
+  }
+
   toggleCategory(id: number) {
     const i = this.categoryIds.indexOf(id);
-    if (i >= 0) this.categoryIds.splice(i, 1);
-    else this.categoryIds.push(id);
+    if (i >= 0) {
+      this.categoryIds.splice(i, 1);
+    } else {
+      const max = Number(app.forum.attribute('projectsMaxCategories')) || 0;
+      if (max > 0 && this.categoryIds.length >= max) {
+        app.alerts.show({ type: 'error' }, t('form.categories_max', { max }));
+        return;
+      }
+      this.categoryIds.push(id);
+    }
     if (!this.categoryIds.includes(this.primaryCategoryId as number)) {
       this.primaryCategoryId = this.categoryIds[0] || null;
     }
@@ -251,6 +324,7 @@ export default class ProjectFormModal extends Modal {
       primaryCategoryId: this.primaryCategoryId,
       fieldValues: this.fieldValues,
       links,
+      coAuthors: this.coAuthorEntries,
       discussionId: this.discussionId || null,
     };
 

@@ -17,7 +17,11 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class ProjectSerializer
 {
-    public static function serialize(Project $project, ?User $actor = null, bool $full = false, ?ServerRequestInterface $request = null): array
+    public function __construct(private Formatter $formatter)
+    {
+    }
+
+    public function serialize(Project $project, ?User $actor = null, bool $full = false, ?ServerRequestInterface $request = null): array
     {
         $author = null;
         if ($project->relationLoaded('user') && $project->user) {
@@ -43,6 +47,7 @@ class ProjectSerializer
             'createdAt'       => optional($project->created_at)->toIso8601String(),
             'updatedAt'       => optional($project->updated_at)->toIso8601String(),
             'author'          => $author,
+            'coAuthors'       => self::coAuthors($project),
             'primaryCategory' => self::category($project->relationLoaded('primaryCategory') ? $project->primaryCategory : null),
             'categories'      => $project->relationLoaded('categories')
                 ? $project->categories->map(fn ($c) => self::category($c))->filter()->values()->all()
@@ -54,14 +59,45 @@ class ProjectSerializer
             'canDelete'       => self::canDelete($project, $actor),
             'canModerate'     => $actor && ! $actor->isGuest()
                 && ($actor->isAdmin() || $actor->hasPermission('projects.moderate')),
+            'isFeatured'      => (bool) $project->is_featured,
+            'canFeature'      => self::canFeature($project, $actor),
         ];
 
         if ($full) {
-            $data['contentHtml'] = self::renderContent($project, $request);
+            $data['contentHtml'] = $this->renderContent($project, $request);
             $data['content'] = $project->content; // raw, for the edit form
         }
 
         return $data;
+    }
+
+    /** Co-authors: linked forum users (with avatar/link) or plain text names. */
+    private static function coAuthors(Project $project): array
+    {
+        if (! $project->relationLoaded('coAuthors')) {
+            return [];
+        }
+
+        return $project->coAuthors
+            ->sortBy('position')
+            ->map(function ($a) {
+                if ($a->user_id && $a->relationLoaded('user') && $a->user) {
+                    $u = $a->user;
+
+                    return [
+                        'userId'      => (int) $u->id,
+                        'username'    => $u->username,
+                        'displayName' => $u->display_name ?: $u->username,
+                        'avatarUrl'   => $u->avatar_url,
+                        'slug'        => $u->slug ?? (string) $u->id,
+                    ];
+                }
+
+                return ['name' => $a->name];
+            })
+            ->filter(fn ($a) => ! empty($a['name']) || ! empty($a['username']))
+            ->values()
+            ->all();
     }
 
     private static function category($category): ?array
@@ -127,7 +163,7 @@ class ProjectSerializer
             ->all();
     }
 
-    private static function renderContent(Project $project, ?ServerRequestInterface $request): string
+    private function renderContent(Project $project, ?ServerRequestInterface $request): string
     {
         $content = (string) $project->content;
         if ($content === '') {
@@ -135,10 +171,9 @@ class ProjectSerializer
         }
 
         try {
-            $formatter = resolve(Formatter::class);
-            $xml = $formatter->parse($content, $project);
+            $xml = $this->formatter->parse($content, $project);
 
-            return $formatter->render($xml, $project, $request);
+            return $this->formatter->render($xml, $project, $request);
         } catch (\Throwable $e) {
             // Defensive fallback — never let a formatting hiccup 500 the detail page.
             return '<p>' . nl2br(htmlspecialchars($content, ENT_QUOTES)) . '</p>';
@@ -175,5 +210,13 @@ class ProjectSerializer
     {
         // Same rule as edit for v1.
         return self::canEdit($project, $actor);
+    }
+
+    /** The owner may feature their own published project on their profile. */
+    public static function canFeature(Project $project, ?User $actor): bool
+    {
+        return $actor && ! $actor->isGuest()
+            && $project->user_id && (int) $actor->id === (int) $project->user_id
+            && $project->isPublished();
     }
 }

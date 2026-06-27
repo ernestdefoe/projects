@@ -29,12 +29,28 @@ class AwardBadgeOnPublish
             return;
         }
 
-        $badgeId = (int) $this->settings->get('ernestdefoe-projects.publish_badge_id');
         $userId = $event->project->user_id;
-        if (! $badgeId || ! $userId) {
+        if (! $userId) {
             return;
         }
 
+        // Collect the badges to grant: the global "any publish" badge, plus any
+        // per-category badge for the categories this project belongs to (e.g.
+        // Book -> Writer, Game -> Developer).
+        $badgeIds = [(int) $this->settings->get('ernestdefoe-projects.publish_badge_id')];
+
+        foreach ($event->project->categories()->get() as $category) {
+            $badgeIds[] = (int) $category->badge_id;
+        }
+
+        foreach (array_unique(array_filter($badgeIds)) as $badgeId) {
+            $this->award($badgeId, (int) $userId);
+        }
+    }
+
+    /** Grant one badge to the user, once. Never lets a badges hiccup break publishing. */
+    private function award(int $badgeId, int $userId): void
+    {
         try {
             /** @var \FoF\Badges\Badge|null $badge */
             $badge = \FoF\Badges\Badge::query()->find($badgeId);
@@ -42,15 +58,13 @@ class AwardBadgeOnPublish
                 return;
             }
 
-            // Award once — skip if the user already holds it.
             if ($badge->users()->where('users.id', $userId)->exists()) {
                 return;
             }
 
-            $badge->users()->attach($userId, ['assigned_at' => now()]);
+            $badge->users()->attach($userId, ['assigned_at' => \Carbon\Carbon::now()]);
         } catch (\Throwable $e) {
-            // Never let a badges hiccup break project publishing.
-            $this->log->warning('[projects] failed to award publish badge: ' . $e->getMessage());
+            $this->log->warning('[projects] failed to award badge ' . $badgeId . ': ' . $e->getMessage());
         }
     }
 }

@@ -60,6 +60,11 @@ class SaveButtonController implements RequestHandlerInterface
         $button->allow_custom_label = (bool) Arr::get($attrs, 'allowCustomLabel', true);
         $button->is_required = (bool) Arr::get($attrs, 'isRequired', false);
         $button->is_primary = (bool) Arr::get($attrs, 'isPrimary', false);
+
+        // Per-tag restriction: empty list => available for every category.
+        $cats = array_values(array_filter(array_map('intval', (array) Arr::get($attrs, 'categoryIds', [])), fn ($i) => $i > 0));
+        $button->category_ids = $cats ?: null;
+
         $button->position = (int) Arr::get($attrs, 'position', $button->position ?? 0);
         $button->save();
 

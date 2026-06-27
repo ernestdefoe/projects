@@ -91,8 +91,8 @@ export default class ProjectsConfigManager extends Component {
             m('li.ProjectsConfig-item', [
               m('span.ProjectsConfig-label', renderLabel(item)),
               m('.ProjectsConfig-itemActions', [
-                Button.component({ className: 'Button Button--icon Button--text', icon: 'fas fa-pencil', onclick: () => this.edit(modalFor(item), item) }),
-                Button.component({ className: 'Button Button--icon Button--text', icon: 'fas fa-trash', onclick: () => this.confirmDelete(remove, item.id) }),
+                Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-pencil', onclick: () => this.edit(modalFor(item), item) }),
+                Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-trash', onclick: () => this.confirmDelete(remove, item.id) }),
               ]),
             ])
           )
@@ -102,7 +102,7 @@ export default class ProjectsConfigManager extends Component {
   }
 
   edit(modal: any, item?: any) {
-    app.modal.show(modal, { item, onsave: () => this.refresh() });
+    app.modal.show(modal, { item, categories: this.config.categories, onsave: () => this.refresh() });
   }
 
   confirmDelete(remove: (id: number) => Promise<void>, id: number) {

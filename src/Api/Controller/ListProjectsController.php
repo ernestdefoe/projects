@@ -23,6 +23,10 @@ class ListProjectsController implements RequestHandlerInterface
 {
     private const PER_PAGE = 20;
 
+    public function __construct(private ProjectSerializer $serializer)
+    {
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $actor = RequestUtil::getActor($request);
@@ -75,11 +79,11 @@ class ListProjectsController implements RequestHandlerInterface
         $total = (clone $query)->count();
 
         $projects = $query
-            ->with(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes'])
+            ->with(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user'])
             ->forPage($page, $perPage)
             ->get();
 
-        $data = $projects->map(fn (Project $p) => ProjectSerializer::serialize($p, $actor))->all();
+        $data = $projects->map(fn (Project $p) => $this->serializer->serialize($p, $actor))->all();
 
         return new JsonResponse([
             'data' => $data,

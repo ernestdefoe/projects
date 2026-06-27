@@ -1,6 +1,7 @@
 import app from 'flarum/forum/app';
 import Component from 'flarum/common/Component';
 import type { Project } from '../../common/api';
+import { authorAvatar } from '../authorAvatar';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.forum.' + k, p);
@@ -50,9 +51,13 @@ export default class ProjectCard extends Component {
                 href: app.route('user', { username: p.author.username }),
                 onclick: (e: Event) => e.stopPropagation(),
               }, [
-                m('img.ProjectCard-avatar', { src: p.author.avatarUrl || '', alt: '' }),
+                authorAvatar(p.author),
                 m('span', p.author.displayName),
               ])
+            : null,
+
+          p.coAuthors && p.coAuthors.length
+            ? m('.ProjectCard-coAuthors', t('with') + ' ' + p.coAuthors.map((a) => a.displayName || a.username || a.name).join(', '))
             : null,
 
           this.cardFields(p),
@@ -62,6 +67,13 @@ export default class ProjectCard extends Component {
 
         m('.ProjectCard-footer', [
           m('.ProjectCard-links', this.links(p)),
+          this.attrs.onFeature && p.canFeature
+            ? m('button.ProjectCard-feature' + (p.isFeatured ? '.is-featured' : ''), {
+                type: 'button',
+                title: p.isFeatured ? t('featured') : t('feature'),
+                onclick: (e: Event) => { e.stopPropagation(); this.attrs.onFeature(p); },
+              }, m('i', { className: (p.isFeatured ? 'fas' : 'far') + ' fa-star' }))
+            : null,
           m('button.ProjectCard-like' + (p.liked ? '.is-liked' : ''), {
             type: 'button',
             disabled: p.liked === null,
@@ -100,13 +112,18 @@ export default class ProjectCard extends Component {
   }
 
   links(p: Project) {
+    // Plain .Button (not Button--icon) so the label always shows, like the
+    // detail page. The serializer guarantees a non-empty label (custom label,
+    // else the button's label, else the URL), so a button is never a blank strip
+    // even when it has no icon.
     return p.links.slice(0, 3).map((link) =>
       m(
-        'a.Button.Button--icon.ProjectCard-linkBtn' + (link.isPrimary ? '.Button--primary' : ''),
+        'a.Button.Button--projectLink.ProjectCard-linkBtn' + (link.isPrimary ? '.Button--primary' : ''),
         {
           href: link.url,
           target: '_blank',
           rel: 'noopener noreferrer nofollow',
+          title: link.label,
           onclick: (e: Event) => e.stopPropagation(),
         },
         [link.icon ? m('i.Button-icon', { className: link.icon }) : null, m('span.Button-label', link.label)]

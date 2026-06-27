@@ -2,7 +2,7 @@ import app from 'flarum/forum/app';
 import UserPage from 'flarum/forum/components/UserPage';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import ProjectCard from './ProjectCard';
-import { listProjects, likeProject, type Project } from '../../common/api';
+import { listProjects, likeProject, featureProject, type Project } from '../../common/api';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.forum.' + k, p);
@@ -45,6 +45,18 @@ export default class UserProjectsPage extends UserPage {
     });
   }
 
+  feature(project: Project) {
+    featureProject(project.id)
+      .then((res) => {
+        // The server clears any previously-featured project; reflect that locally.
+        this.projects = this.projects.map((p) =>
+          p.id === res.data.id ? res.data : { ...p, isFeatured: false }
+        );
+        m.redraw();
+      })
+      .catch(() => app.alerts.show({ type: 'error' }, t('like_error')));
+  }
+
   content() {
     if (this.loadingProjects) {
       return m('.UserProjectsPage', m(LoadingIndicator, { size: 'large' }));
@@ -56,7 +68,7 @@ export default class UserProjectsPage extends UserPage {
 
     return m(
       '.UserProjectsPage',
-      m('.ProjectsGrid', this.projects.map((p) => m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x) })))
+      m('.ProjectsGrid', this.projects.map((p) => m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x), onFeature: (x: Project) => this.feature(x) })))
     );
   }
 }

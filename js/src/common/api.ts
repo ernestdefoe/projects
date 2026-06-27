@@ -10,6 +10,7 @@ export interface ProjectCategory {
 
 export interface CategoryDef extends ProjectCategory {
   description?: string | null;
+  badgeId?: number | null;
   position: number;
 }
 
@@ -26,6 +27,7 @@ export interface FieldDef {
   suffix?: string | null;
   isRequired: boolean;
   onCard: boolean;
+  categoryIds: number[];
   position: number;
 }
 
@@ -38,6 +40,7 @@ export interface ButtonDef {
   allowCustomLabel: boolean;
   isRequired: boolean;
   isPrimary: boolean;
+  categoryIds: number[];
   position: number;
 }
 
@@ -70,6 +73,16 @@ export interface ProjectAuthor {
   slug: string;
 }
 
+/** A co-author: a linked forum user (username/displayName/…) or a free-text name. */
+export interface ProjectCoAuthor {
+  userId?: number;
+  username?: string;
+  displayName?: string;
+  avatarUrl?: string | null;
+  slug?: string;
+  name?: string;
+}
+
 export interface Project {
   id: number;
   title: string;
@@ -83,6 +96,7 @@ export interface Project {
   createdAt?: string;
   updatedAt?: string;
   author: ProjectAuthor | null;
+  coAuthors: ProjectCoAuthor[];
   primaryCategory: ProjectCategory | null;
   categories: ProjectCategory[];
   fields: ProjectFieldValue[];
@@ -91,6 +105,8 @@ export interface Project {
   canEdit: boolean;
   canDelete: boolean;
   canModerate: boolean;
+  isFeatured: boolean;
+  canFeature: boolean;
   contentHtml?: string;
   content?: string | null;
 }
@@ -158,6 +174,11 @@ export function likeProject(id: number): Promise<{ data: Project }> {
   return app.request<{ data: Project }>({ method: 'POST', url: `${base()}/${id}/like` });
 }
 
+/** Toggle whether this project is the owner's featured project. */
+export function featureProject(id: number): Promise<{ data: Project }> {
+  return app.request<{ data: Project }>({ method: 'POST', url: `${base()}/${id}/feature` });
+}
+
 export function moderateProject(id: number, action: 'approve' | 'reject', reason?: string): Promise<{ data: Project }> {
   return app.request<{ data: Project }>({
     method: 'POST',
@@ -168,6 +189,13 @@ export function moderateProject(id: number, action: 'approve' | 'reject', reason
 
 /** Upload a project image; resolves to its public URL. */
 export function uploadImage(file: File): Promise<string> {
+  // Reject oversized files client-side before the round-trip; the server enforces
+  // the same limit authoritatively.
+  const maxMb = app.forum.attribute<number>('projectsMaxImageMb') || 4;
+  if (file.size > maxMb * 1024 * 1024) {
+    return Promise.reject(new Error(app.translator.trans('ernestdefoe-projects.forum.image_too_large', { max: maxMb }) as unknown as string));
+  }
+
   const body = new FormData();
   body.append('image', file);
 

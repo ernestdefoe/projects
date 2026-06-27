@@ -29,7 +29,8 @@ class FeaturedProject
             ->where('user_id', $userId)
             ->where('status', Project::STATUS_PUBLISHED)
             ->with('primaryCategory')
-            ->orderByDesc('created_at')
+            ->orderByDesc('is_featured') // the member's explicit pick wins…
+            ->orderByDesc('created_at')  // …otherwise the latest published
             ->orderByDesc('id')
             ->first();
 

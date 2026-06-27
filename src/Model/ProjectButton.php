@@ -25,6 +25,7 @@ class ProjectButton extends AbstractModel
 
     protected $casts = [
         'allowed_domains'    => 'array',
+        'category_ids'       => 'array',
         'allow_custom_label' => 'boolean',
         'is_required'        => 'boolean',
         'is_primary'         => 'boolean',

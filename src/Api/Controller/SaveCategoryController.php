@@ -43,6 +43,7 @@ class SaveCategoryController implements RequestHandlerInterface
         $category->icon = trim((string) Arr::get($attrs, 'icon', '')) ?: null;
         $category->color = trim((string) Arr::get($attrs, 'color', '')) ?: '#5b3df5';
         $category->description = trim((string) Arr::get($attrs, 'description', '')) ?: null;
+        $category->badge_id = (int) Arr::get($attrs, 'badgeId', 0) ?: null;
         $category->position = (int) Arr::get($attrs, 'position', $category->position ?? 0);
         $category->save();
 

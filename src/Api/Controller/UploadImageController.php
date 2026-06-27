@@ -5,6 +5,7 @@ namespace ErnestDefoe\Projects\Api\Controller;
 use Flarum\Foundation\ValidationException;
 use Flarum\Http\RequestUtil;
 use Flarum\Locale\TranslatorInterface;
+use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Contracts\Filesystem\Factory;
 use Illuminate\Support\Str;
 use Laminas\Diactoros\Response\JsonResponse;
@@ -19,7 +20,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class UploadImageController implements RequestHandlerInterface
 {
-    private const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
+    private const DEFAULT_MAX_MB = 4;
     private const MIME_EXT = [
         'image/jpeg' => 'jpg',
         'image/png'  => 'png',
@@ -30,7 +31,16 @@ class UploadImageController implements RequestHandlerInterface
     public function __construct(
         private Factory $filesystem,
         private TranslatorInterface $translator,
+        private SettingsRepositoryInterface $settings,
     ) {
+    }
+
+    /** Admin-configurable max cover-image size, in bytes (defaults to 4 MB). */
+    private function maxBytes(): int
+    {
+        $mb = (int) $this->settings->get('ernestdefoe-projects.max_image_mb', self::DEFAULT_MAX_MB);
+
+        return ($mb > 0 ? $mb : self::DEFAULT_MAX_MB) * 1024 * 1024;
     }
 
     private function t(string $key, array $params = []): string
@@ -51,17 +61,20 @@ class UploadImageController implements RequestHandlerInterface
             throw new ValidationException(['image' => $this->t('upload_none')]);
         }
 
-        if ($file->getSize() > self::MAX_BYTES) {
-            throw new ValidationException(['image' => $this->t('upload_too_large', ['{max}' => (int) (self::MAX_BYTES / 1024 / 1024)])]);
+        $maxBytes = $this->maxBytes();
+        if ($file->getSize() > $maxBytes) {
+            throw new ValidationException(['image' => $this->t('upload_too_large', ['{max}' => (int) ($maxBytes / 1024 / 1024)])]);
         }
 
-        $mime = strtolower((string) $file->getClientMediaType());
-        if (! isset(self::MIME_EXT[$mime])) {
-            // Fall back to sniffing the stream when the client mime is missing/wrong.
-            $tmp = $file->getStream()->getMetadata('uri');
-            $info = $tmp ? @getimagesize($tmp) : false;
-            $mime = $info['mime'] ?? '';
-        }
+        // SECURITY: never trust the client-declared Content-Type — it is fully
+        // attacker-controlled. Sniff the real type from the file's magic bytes and
+        // reject anything that isn't a genuine image of an allowed type. This also
+        // forces the stored extension from the sniffed type, so a disguised payload
+        // cannot pick its own extension.
+        $contents = $file->getStream()->getContents();
+        $info = @getimagesizefromstring($contents);
+        $mime = strtolower((string) ($info['mime'] ?? ''));
+
         if (! isset(self::MIME_EXT[$mime])) {
             throw new ValidationException(['image' => $this->t('upload_type')]);
         }
@@ -69,7 +82,7 @@ class UploadImageController implements RequestHandlerInterface
         $disk = $this->filesystem->disk('flarum-assets');
         $name = 'projects/' . date('Y/m') . '/' . Str::random(24) . '.' . self::MIME_EXT[$mime];
 
-        $disk->put($name, $file->getStream()->getContents(), 'public');
+        $disk->put($name, $contents, 'public');
 
         return new JsonResponse(['data' => ['url' => $disk->url($name)]]);
     }

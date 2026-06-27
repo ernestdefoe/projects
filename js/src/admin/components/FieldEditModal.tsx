@@ -3,6 +3,7 @@ import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
 import Switch from 'flarum/common/components/Switch';
 import { saveField, type FieldDef, type FieldType } from '../../common/api';
+import { categoryRestrictionField } from '../categoryRestriction';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.admin.' + k, p);
@@ -45,6 +46,7 @@ export default class FieldEditModal extends Modal {
       m('.Form-group.ProjectsFieldModal-inline', [this.text('prefix', t('config.field_prefix')), this.text('suffix', t('config.field_suffix'))]),
       m('.Form-group', m(Switch, { state: !!this.item.isRequired, onchange: (v: boolean) => (this.item.isRequired = v) }, t('config.field_required'))),
       m('.Form-group', m(Switch, { state: this.item.onCard !== false, onchange: (v: boolean) => (this.item.onCard = v) }, t('config.field_on_card'))),
+      categoryRestrictionField(this.attrs.categories, this.item),
       m('.Form-group', Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, t('config.save'))),
     ]);
   }
@@ -69,6 +71,7 @@ export default class FieldEditModal extends Modal {
         suffix: this.item.suffix,
         isRequired: this.item.isRequired,
         onCard: this.item.onCard,
+        categoryIds: this.item.categoryIds || [],
         position: this.item.position,
       },
       (this.attrs.item as FieldDef | undefined)?.id

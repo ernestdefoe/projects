@@ -39,6 +39,7 @@ class Project extends AbstractModel
 
     protected $casts = [
         'likes_count' => 'integer',
+        'is_featured' => 'boolean',
         'created_at'  => 'datetime',
         'updated_at'  => 'datetime',
     ];
@@ -87,6 +88,11 @@ class Project extends AbstractModel
     public function links(): HasMany
     {
         return $this->hasMany(ProjectLink::class, 'project_id');
+    }
+
+    public function coAuthors(): HasMany
+    {
+        return $this->hasMany(ProjectAuthor::class, 'project_id');
     }
 
     public function likes(): BelongsToMany

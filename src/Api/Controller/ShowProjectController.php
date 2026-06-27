@@ -16,6 +16,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 /** GET /api/projects/{id} — a single project by id or slug, with full content. */
 class ShowProjectController implements RequestHandlerInterface
 {
+    public function __construct(private ProjectSerializer $serializer)
+    {
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $actor = RequestUtil::getActor($request);
@@ -29,13 +33,13 @@ class ShowProjectController implements RequestHandlerInterface
                     $q->orWhere('id', (int) $key);
                 }
             })
-            ->with(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes'])
+            ->with(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user'])
             ->first();
 
         if (! $project) {
             throw new PermissionDeniedException();
         }
 
-        return new JsonResponse(['data' => ProjectSerializer::serialize($project, $actor, true, $request)]);
+        return new JsonResponse(['data' => $this->serializer->serialize($project, $actor, true, $request)]);
     }
 }

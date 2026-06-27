@@ -53,6 +53,11 @@ class SaveFieldController implements RequestHandlerInterface
         $field->suffix = trim((string) Arr::get($attrs, 'suffix', '')) ?: null;
         $field->is_required = (bool) Arr::get($attrs, 'isRequired', false);
         $field->on_card = (bool) Arr::get($attrs, 'onCard', true);
+
+        // Per-tag restriction: empty list => available for every category.
+        $cats = array_values(array_filter(array_map('intval', (array) Arr::get($attrs, 'categoryIds', [])), fn ($i) => $i > 0));
+        $field->category_ids = $cats ?: null;
+
         $field->position = (int) Arr::get($attrs, 'position', $field->position ?? 0);
         $field->save();
 

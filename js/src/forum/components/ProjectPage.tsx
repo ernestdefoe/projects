@@ -4,7 +4,8 @@ import Button from 'flarum/common/components/Button';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import Link from 'flarum/common/components/Link';
 import ProjectFormModal from './ProjectFormModal';
-import { getProject, likeProject, deleteProject, moderateProject, type Project } from '../../common/api';
+import { getProject, likeProject, featureProject, deleteProject, moderateProject, type Project } from '../../common/api';
+import { authorAvatar } from '../authorAvatar';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.forum.' + k, p);
@@ -14,6 +15,7 @@ export default class ProjectPage extends Page {
   project: Project | null = null;
   loading = true;
   notFound = false;
+  error: any = null;
 
   oninit(vnode: any) {
     super.oninit(vnode);
@@ -30,6 +32,7 @@ export default class ProjectPage extends Page {
   loadProject(slug: string) {
     this.loading = true;
     this.notFound = false;
+    this.error = null;
     getProject(slug)
       .then((res) => {
         this.project = res.data;
@@ -37,8 +40,15 @@ export default class ProjectPage extends Page {
         this.loading = false;
         m.redraw();
       })
-      .catch(() => {
-        this.notFound = true;
+      .catch((e) => {
+        // Distinguish a genuine 404 from access/server/network failures so the
+        // user knows whether to retry or whether they simply can't see it.
+        const status = e?.status ?? e?.response?.status;
+        if (status === 404) {
+          this.notFound = true;
+        } else {
+          this.error = status === 401 || status === 403 ? t('load_error_forbidden') : t('project_error');
+        }
         this.loading = false;
         m.redraw();
       });
@@ -46,6 +56,13 @@ export default class ProjectPage extends Page {
 
   view() {
     if (this.loading) return m('.ProjectPage', m('.container', m(LoadingIndicator, { size: 'large' })));
+    if (this.error) {
+      return m('.ProjectPage', m('.container', m('.ProjectPage-empty.ProjectsPage-error', [
+        m('i.fas.fa-circle-exclamation'),
+        m('p', this.error),
+        Button.component({ className: 'Button', onclick: () => this.loadProject(m.route.param('slug')) }, t('retry')),
+      ])));
+    }
     if (this.notFound || !this.project) return m('.ProjectPage', m('.container', m('.ProjectPage-empty', t('not_found'))));
 
     const p = this.project;
@@ -76,10 +93,12 @@ export default class ProjectPage extends Page {
 
         p.author
           ? m(Link, { href: app.route('user', { username: p.author.username }), className: 'ProjectPage-author' }, [
-              m('img.ProjectCard-avatar', { src: p.author.avatarUrl || '' }),
+              authorAvatar(p.author),
               m('span', p.author.displayName),
             ])
           : null,
+
+        p.coAuthors && p.coAuthors.length ? this.coAuthorsLine(p) : null,
 
         this.fields(p),
 
@@ -104,6 +123,22 @@ export default class ProjectPage extends Page {
     ]);
   }
 
+  coAuthorsLine(p: Project) {
+    return m(
+      '.ProjectPage-coAuthors',
+      [
+        t('with'),
+        ' ',
+        ...p.coAuthors.map((a, i) => [
+          i > 0 ? ', ' : null,
+          a.username
+            ? m(Link, { href: app.route('user', { username: a.username }) }, a.displayName || a.username)
+            : m('span', a.name),
+        ]),
+      ]
+    );
+  }
+
   fields(p: Project) {
     if (!p.fields.length) return null;
     return m('.ProjectPage-fields', p.fields.map((f) =>
@@ -121,6 +156,13 @@ export default class ProjectPage extends Page {
       items.push(Button.component({ className: 'Button Button--primary', icon: 'fas fa-check', onclick: () => this.moderate('approve') }, t('moderate.approve')));
       items.push(Button.component({ className: 'Button', icon: 'fas fa-xmark', onclick: () => this.moderate('reject') }, t('moderate.reject')));
     }
+    if (p.canFeature) {
+      items.push(Button.component({
+        className: 'Button' + (p.isFeatured ? ' Button--primary' : ''),
+        icon: p.isFeatured ? 'fas fa-star' : 'far fa-star',
+        onclick: () => this.feature(),
+      }, p.isFeatured ? t('featured') : t('feature')));
+    }
     if (p.canEdit) {
       items.push(Button.component({ className: 'Button', icon: 'fas fa-pencil', onclick: () => app.modal.show(ProjectFormModal, { project: p, onsave: () => this.loadProject(p.slug) }) }, t('edit')));
     }
@@ -133,7 +175,16 @@ export default class ProjectPage extends Page {
 
   like() {
     if (!app.session.user || !this.project) return;
-    likeProject(this.project.id).then((res) => { this.project = res.data; m.redraw(); });
+    likeProject(this.project.id)
+      .then((res) => { this.project = res.data; m.redraw(); })
+      .catch(() => app.alerts.show({ type: 'error' }, t('like_error')));
+  }
+
+  feature() {
+    if (!this.project) return;
+    featureProject(this.project.id)
+      .then((res) => { this.project = res.data; m.redraw(); })
+      .catch(() => app.alerts.show({ type: 'error' }, t('like_error')));
   }
 
   moderate(action: 'approve' | 'reject') {

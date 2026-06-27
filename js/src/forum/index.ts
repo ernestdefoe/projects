@@ -2,9 +2,9 @@ import app from 'flarum/forum/app';
 import { extend } from 'flarum/common/extend';
 import IndexSidebar from 'flarum/forum/components/IndexSidebar';
 import UserPage from 'flarum/forum/components/UserPage';
+import PostUser from 'flarum/forum/components/PostUser';
 import LinkButton from 'flarum/common/components/LinkButton';
-import Badge from 'flarum/common/components/Badge';
-import User from 'flarum/common/models/User';
+import Link from 'flarum/common/components/Link';
 import ProjectsPage from './components/ProjectsPage';
 import ProjectPage from './components/ProjectPage';
 import UserProjectsPage from './components/UserProjectsPage';
@@ -40,22 +40,29 @@ app.initializers.add('ernestdefoe/projects', () => {
     );
   });
 
-  // Featured-project badge next to the username everywhere user badges render
-  // (posts, user card, …). Reads the denormalised `projectFeatured` snapshot on
-  // the user model, so there's no per-render query.
-  extend(User.prototype, 'badges', function (this: any, items: any) {
-    const featured = this.attribute('projectFeatured');
-    if (!featured || !featured.title) return;
+  // Featured-project badge next to the username, beside FoF Badges' primary
+  // badge (.PrimaryBadge) rather than among the group badges. Reads the
+  // denormalised `projectFeatured` snapshot (no per-render query) and links to
+  // the project. Mirrors how fof/badges injects its PrimaryBadge into PostUser.
+  extend(PostUser.prototype, 'view', function (this: any, vnode: any) {
+    const post = this.attrs.post;
+    const user = post && typeof post.user === 'function' ? post.user() : null;
+    const featured = user && typeof user.attribute === 'function' ? user.attribute('projectFeatured') : null;
+    if (!featured || !featured.title || !featured.slug) return;
+    if (!vnode || !Array.isArray(vnode.children)) return;
 
-    items.add(
-      'projectFeatured',
-      Badge.component({
-        icon: featured.icon || 'fas fa-cube',
-        type: 'projects-featured',
-        label: featured.title,
-        style: featured.color ? { backgroundColor: featured.color } : undefined,
-      }),
-      15
+    vnode.children.push(
+      m(
+        Link,
+        {
+          href: app.route('projects.show', { slug: featured.slug }),
+          className: 'PrimaryBadge ProjectFeaturedBadge',
+          title: featured.title,
+          style: featured.color ? { '--project-accent': featured.color } : undefined,
+          onclick: (e: Event) => e.stopPropagation(),
+        },
+        [m('i', { className: featured.icon || 'fas fa-cube' }), m('span.PrimaryBadge-name', featured.title)]
+      )
     );
   });
 });

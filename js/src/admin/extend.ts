@@ -27,6 +27,27 @@ export default [
       label: t('settings.publish_badge_id'),
       help: t('settings.publish_badge_id_help'),
     }))
+    .setting(() => ({
+      setting: 'ernestdefoe-projects.max_image_mb',
+      type: 'number',
+      label: t('settings.max_image_mb'),
+      help: t('settings.max_image_mb_help'),
+      default: 4,
+    }))
+    .setting(() => ({
+      setting: 'ernestdefoe-projects.min_categories',
+      type: 'number',
+      label: t('settings.min_categories'),
+      help: t('settings.min_categories_help'),
+      default: 0,
+    }))
+    .setting(() => ({
+      setting: 'ernestdefoe-projects.max_categories',
+      type: 'number',
+      label: t('settings.max_categories'),
+      help: t('settings.max_categories_help'),
+      default: 0,
+    }))
     .permission(() => ({ icon: 'fas fa-plus', label: t('permissions.create'), permission: 'projects.create' }), 'start')
     .permission(() => ({ icon: 'fas fa-bolt', label: t('permissions.skip_moderation'), permission: 'projects.skipModeration' }), 'start')
     .permission(() => ({ icon: 'fas fa-gavel', label: t('permissions.moderate'), permission: 'projects.moderate' }), 'moderate')

@@ -2,6 +2,10 @@
 
 .ProjectsConfig {
   margin-top: 10px;
+  max-width: 760px;
+
+  // Icon action buttons in the lists must never pick up the text-link underline.
+  .Button--icon:hover { text-decoration: none; }
 
   &-section {
     margin-bottom: 28px;
@@ -41,9 +45,38 @@
   &-itemActions { display: flex; gap: 2px; flex-shrink: 0; }
 }
 
+// Clip the header to the content's rounded corners so the square-cornered title
+// bar can't mismatch a themed modal border/shadow.
+.ProjectsFieldModal, .ProjectsButtonModal, .ProjectsCategoryModal {
+  .Modal-content { overflow: hidden; }
+}
+
 .ProjectsFieldModal-inline {
   display: flex;
   gap: 12px;
 
   > .Form-group { flex: 1; }
+}
+
+.ProjectsConfig-catPick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+
+  .ProjectsConfig-catChip {
+    --project-accent: var(--primary-color);
+    border: 1px solid var(--control-bg);
+    background: none;
+    border-radius: 20px;
+    padding: 4px 11px;
+    cursor: pointer;
+    font-size: 13px;
+
+    &.is-on {
+      color: #fff;
+      background: var(--project-accent);
+      border-color: var(--project-accent);
+    }
+  }
 }

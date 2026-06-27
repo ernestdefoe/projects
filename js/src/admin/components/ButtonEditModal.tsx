@@ -3,6 +3,7 @@ import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
 import Switch from 'flarum/common/components/Switch';
 import { saveButton, type ButtonDef } from '../../common/api';
+import { categoryRestrictionField } from '../categoryRestriction';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.admin.' + k, p);
@@ -38,6 +39,7 @@ export default class ButtonEditModal extends Modal {
       m('.Form-group', m(Switch, { state: this.item.allowCustomLabel !== false, onchange: (v: boolean) => (this.item.allowCustomLabel = v) }, t('config.button_custom_label'))),
       m('.Form-group', m(Switch, { state: !!this.item.isPrimary, onchange: (v: boolean) => (this.item.isPrimary = v) }, t('config.button_primary'))),
       m('.Form-group', m(Switch, { state: !!this.item.isRequired, onchange: (v: boolean) => (this.item.isRequired = v) }, t('config.button_required'))),
+      categoryRestrictionField(this.attrs.categories, this.item),
       m('.Form-group', Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, t('config.save'))),
     ]);
   }
@@ -60,6 +62,7 @@ export default class ButtonEditModal extends Modal {
         allowCustomLabel: this.item.allowCustomLabel,
         isRequired: this.item.isRequired,
         isPrimary: this.item.isPrimary,
+        categoryIds: this.item.categoryIds || [],
         position: this.item.position,
       },
       (this.attrs.item as ButtonDef | undefined)?.id

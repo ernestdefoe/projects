@@ -44,6 +44,8 @@
   &-filter {
     width: auto;
     flex: 0 0 auto;
+    // Don't let a native select collapse narrower than its label.
+    min-width: 140px;
   }
 
   &-loading,
@@ -173,6 +175,19 @@
     height: 22px;
     border-radius: 50%;
     object-fit: cover;
+
+    // Fallback when the author has no uploaded avatar — a coloured initial
+    // instead of a broken <img>.
+    &.ProjectAvatar--initial {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--muted-color, #8a8a8a);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
   }
 
   &-fields {
@@ -204,20 +219,36 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 8px 10px;
+    flex-wrap: wrap;
     padding: 10px 14px;
     border-top: 1px solid var(--control-bg);
   }
 
   &-links {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
-    overflow: hidden;
+    flex: 1;
+    min-width: 0;
   }
+
+  // Keep the like control pinned to the right even when the link buttons wrap
+  // onto a second line, so nothing gets clipped.
+  &-like { margin-left: auto; }
 
   &-linkBtn {
     font-size: 12px;
     padding: 4px 10px;
+    max-width: 150px;
+
+    // Labels are always shown now (not icon-only). Truncate long ones with an
+    // ellipsis so the footer never blows out the card width.
+    .Button-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   &-like {
@@ -232,6 +263,18 @@
     &.is-liked { color: #e0245e; }
     &:hover { background: var(--control-bg); }
     &:disabled { opacity: 0.6; cursor: default; }
+  }
+
+  &-feature {
+    border: 0;
+    background: none;
+    color: var(--muted-color);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+
+    &.is-featured { color: #f5b301; }
+    &:hover { background: var(--control-bg); }
   }
 }
 
@@ -291,7 +334,17 @@
 
 /* Submission form */
 .ProjectFormModal {
-  .Modal-content { max-width: 640px; }
+  // overflow:hidden clips the header to the content's rounded corners, so the
+  // square-cornered title bar can't poke past a themed modal border/shadow.
+  .Modal-content { max-width: 640px; overflow: hidden; }
+
+  // Breathing room between fields — the groups were running together.
+  .Modal-body > .Form-group { margin-bottom: 18px; }
+  .Modal-body > .Form-group > label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
 
   .ProjectForm-image {
     display: flex;
@@ -333,10 +386,79 @@
   .ProjectForm-sectionLabel { font-weight: 700; display: block; margin: 18px 0 6px; }
   .ProjectForm-linkRow { display: flex; gap: 8px; }
   .ProjectForm-linkLabel { max-width: 180px; }
-  .ProjectForm-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+
+  .ProjectForm-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 16px;
+    margin-bottom: 18px;
+
+    .Form-group { margin-bottom: 0; }
+    label { display: block; margin-bottom: 5px; font-weight: 600; }
+  }
+
+  .ProjectForm-buttons { margin-bottom: 18px; }
+  .ProjectForm-buttons .ProjectForm-link label { display: block; margin-bottom: 5px; font-weight: 600; }
 }
 
-/* Featured-project badge next to usernames */
-.Badge--projects-featured {
+/* Co-authors */
+.ProjectCard-coAuthors,
+.ProjectPage-coAuthors {
+  font-size: 13px;
+  color: var(--muted-color);
+  margin: 2px 0 8px;
+
+  a { color: var(--muted-color); &:hover { color: var(--link-color); } }
+}
+.ProjectCard-coAuthors { margin: 0 0 6px; font-size: 12px; }
+
+.ProjectForm-coAuthorList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+.ProjectForm-coAuthor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--control-bg);
+  border-radius: 14px;
+  padding: 3px 6px 3px 12px;
+  font-size: 13px;
+}
+.ProjectForm-coAuthorRemove {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--muted-color);
+  padding: 0 4px;
+  &:hover { color: var(--alert-error-color, #c53030); }
+}
+.ProjectForm-coAuthorAdd {
+  display: flex;
+  gap: 8px;
+  .FormControl { flex: 1; }
+}
+
+/* Featured-project badge — sits beside FoF Badges' .PrimaryBadge next to the
+   username, tinted with the project's category accent. Reuses .PrimaryBadge for
+   layout so it matches whether or not fof/badges styles are present. */
+.PrimaryBadge.ProjectFeaturedBadge {
+  --project-accent: var(--primary-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
   color: #fff;
+  background: var(--project-accent);
+
+  &:hover { color: #fff; opacity: 0.9; }
+
+  .PrimaryBadge-name { color: #fff; }
 }

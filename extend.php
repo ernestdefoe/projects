@@ -8,6 +8,7 @@
 
 use ErnestDefoe\Projects\Api\Controller;
 use ErnestDefoe\Projects\Api\DefinitionSerializer;
+use ErnestDefoe\Projects\Api\Resource;
 use ErnestDefoe\Projects\Event\ProjectWasPublished;
 use ErnestDefoe\Projects\Listener\AwardBadgeOnPublish;
 use Flarum\Api\Context;
@@ -46,6 +47,7 @@ return [
         ->patch('/projects/config/buttons/{id}', 'projects.buttons.update', Controller\SaveButtonController::class)
         ->delete('/projects/config/buttons/{id}', 'projects.buttons.delete', Controller\DeleteButtonController::class)
         ->post('/projects/{id}/like', 'projects.like', Controller\LikeProjectController::class)
+        ->post('/projects/{id}/feature', 'projects.feature', Controller\FeatureProjectController::class)
         ->post('/projects/{id}/moderate', 'projects.moderate', Controller\ModerateProjectController::class)
         ->get('/projects/{id}', 'projects.show', Controller\ShowProjectController::class)
         ->patch('/projects/{id}', 'projects.update', Controller\UpdateProjectController::class)
@@ -54,7 +56,10 @@ return [
     // ---- Settings exposed to the forum --------------------------------------
     (new Extend\Settings())
         ->serializeToForum('projectsAllowAdhocLinks', 'ernestdefoe-projects.allow_adhoc_links', fn ($v) => (bool) $v)
-        ->serializeToForum('projectsExcerptLimit', 'ernestdefoe-projects.excerpt_limit', fn ($v) => (int) ($v ?: 280)),
+        ->serializeToForum('projectsExcerptLimit', 'ernestdefoe-projects.excerpt_limit', fn ($v) => (int) ($v ?: 280))
+        ->serializeToForum('projectsMaxImageMb', 'ernestdefoe-projects.max_image_mb', fn ($v) => (int) ($v ?: 4))
+        ->serializeToForum('projectsMinCategories', 'ernestdefoe-projects.min_categories', fn ($v) => (int) $v)
+        ->serializeToForum('projectsMaxCategories', 'ernestdefoe-projects.max_categories', fn ($v) => (int) $v),
 
     // ---- Forum payload: permissions + the building-block definitions --------
     (new Extend\ApiResource(ForumResource::class))
@@ -83,4 +88,9 @@ return [
     // ---- Award a FoF Badge when a project is published (soft integration) ---
     (new Extend\Event())
         ->listen(ProjectWasPublished::class, AwardBadgeOnPublish::class),
+
+    // ---- Register the project as a JSON:API resource type (no endpoints; the
+    //      custom controllers own the HTTP API) so it's observable/extendable
+    //      by other extensions and usable as a relationship. -------------------
+    (new Extend\ApiResource(Resource\ProjectResource::class)),
 ];

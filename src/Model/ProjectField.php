@@ -28,12 +28,13 @@ class ProjectField extends AbstractModel
     protected $table = 'project_fields';
 
     protected $casts = [
-        'options'     => 'array',
-        'is_required' => 'boolean',
-        'on_card'     => 'boolean',
-        'position'    => 'integer',
-        'created_at'  => 'datetime',
-        'updated_at'  => 'datetime',
+        'options'      => 'array',
+        'category_ids' => 'array',
+        'is_required'  => 'boolean',
+        'on_card'      => 'boolean',
+        'position'     => 'integer',
+        'created_at'   => 'datetime',
+        'updated_at'   => 'datetime',
     ];
 
     protected $attributes = [

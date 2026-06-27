@@ -3,12 +3,14 @@
 namespace ErnestDefoe\Projects\Api;
 
 use ErnestDefoe\Projects\Model\Project;
+use ErnestDefoe\Projects\Model\ProjectAuthor;
 use ErnestDefoe\Projects\Model\ProjectButton;
 use ErnestDefoe\Projects\Model\ProjectField;
 use ErnestDefoe\Projects\Model\ProjectFieldValue;
 use ErnestDefoe\Projects\Model\ProjectLink;
 use Flarum\Foundation\ValidationException;
 use Flarum\Locale\TranslatorInterface;
+use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -22,23 +24,29 @@ class ProjectInput
 {
     private const EXCERPT_MAX = 280;
 
+    public function __construct(
+        private TranslatorInterface $translator,
+        private SettingsRepositoryInterface $settings,
+    ) {
+    }
+
     /** Translate an api.* error message in the actor's locale. */
-    private static function t(string $key, array $params = []): string
+    private function t(string $key, array $params = []): string
     {
-        return resolve(TranslatorInterface::class)->trans('ernestdefoe-projects.api.' . $key, $params);
+        return $this->translator->trans('ernestdefoe-projects.api.' . $key, $params);
     }
 
     /** Apply scalar attributes to the (unsaved or existing) project. */
-    public static function apply(Project $project, array $attrs, bool $creating): void
+    public function apply(Project $project, array $attrs, bool $creating): void
     {
         $errors = [];
 
         if (array_key_exists('title', $attrs) || $creating) {
             $title = trim((string) Arr::get($attrs, 'title', ''));
             if ($title === '') {
-                $errors['title'] = self::t('title_required');
+                $errors['title'] = $this->t('title_required');
             } elseif (mb_strlen($title) > 255) {
-                $errors['title'] = self::t('title_max');
+                $errors['title'] = $this->t('title_max');
             } else {
                 $project->title = $title;
                 if ($creating || empty($project->slug)) {
@@ -50,7 +58,7 @@ class ProjectInput
         if (array_key_exists('excerpt', $attrs)) {
             $excerpt = trim((string) $attrs['excerpt']);
             if (mb_strlen($excerpt) > self::EXCERPT_MAX) {
-                $errors['excerpt'] = self::t('excerpt_max', ['{max}' => self::EXCERPT_MAX]);
+                $errors['excerpt'] = $this->t('excerpt_max', ['{max}' => self::EXCERPT_MAX]);
             }
             $project->excerpt = $excerpt !== '' ? $excerpt : null;
         }
@@ -63,7 +71,7 @@ class ProjectInput
         if (array_key_exists('image', $attrs)) {
             $image = trim((string) $attrs['image']);
             if ($image !== '' && ! self::isSafeUrl($image)) {
-                $errors['image'] = self::t('image_invalid');
+                $errors['image'] = $this->t('image_invalid');
             }
             $project->image_path = $image !== '' ? $image : null;
         }
@@ -83,39 +91,65 @@ class ProjectInput
      * required fields/buttons, select options, URL safety and domain rules.
      * Call only AFTER the project has an id (saved).
      */
-    public static function syncRelations(Project $project, array $attrs, User $actor): void
+    public function syncRelations(Project $project, array $attrs, User $actor): void
     {
         $errors = [];
 
         // ---- Categories ----------------------------------------------------
         if (array_key_exists('categoryIds', $attrs)) {
             $ids = collect((array) $attrs['categoryIds'])->map(fn ($i) => (int) $i)->filter()->unique()->values();
-            $project->categories()->sync($ids->all());
 
-            $primary = (int) Arr::get($attrs, 'primaryCategoryId', 0);
-            $project->primary_category_id = ($primary && $ids->contains($primary))
-                ? $primary
-                : ($ids->first() ?: null);
-            $project->save();
+            $settings = $this->settings;
+            $min = (int) $settings->get('ernestdefoe-projects.min_categories', 0);
+            $max = (int) $settings->get('ernestdefoe-projects.max_categories', 0);
+
+            if ($min > 0 && $ids->count() < $min) {
+                $errors['categoryIds'] = $this->t('categories_min', ['{min}' => $min]);
+            } elseif ($max > 0 && $ids->count() > $max) {
+                $errors['categoryIds'] = $this->t('categories_max', ['{max}' => $max]);
+            } else {
+                $project->categories()->sync($ids->all());
+
+                $primary = (int) Arr::get($attrs, 'primaryCategoryId', 0);
+                $project->primary_category_id = ($primary && $ids->contains($primary))
+                    ? $primary
+                    : ($ids->first() ?: null);
+                $project->save();
+            }
         }
+
+        // Categories this project belongs to — gate which fields/buttons apply
+        // (per-tag restriction; an empty restriction list means "all").
+        $projectCatIds = $project->categories()->get()->pluck('id')->map(fn ($i) => (int) $i)->all();
 
         // ---- Custom field values ------------------------------------------
         if (array_key_exists('fieldValues', $attrs)) {
             $fields = ProjectField::all()->keyBy('id');
             $given  = (array) $attrs['fieldValues']; // { fieldId: value }
 
-            foreach ($fields as $field) {
-                $raw = Arr::get($given, (string) $field->id, Arr::get($given, $field->key));
-                $value = self::normaliseFieldValue($field, $raw, $errors);
+            // Load every existing value row for this project up front (one query)
+            // instead of querying per field — avoids the 2N+1 on save.
+            $existingValues = ProjectFieldValue::query()
+                ->where('project_id', $project->id)
+                ->get()
+                ->keyBy('field_id');
 
-                $existing = ProjectFieldValue::query()
-                    ->where('project_id', $project->id)
-                    ->where('field_id', $field->id)
-                    ->first();
+            foreach ($fields as $field) {
+                // Skip fields not applicable to this project's categories; drop any
+                // stale value a now-inapplicable field may have had.
+                if (! self::appliesTo($field->category_ids, $projectCatIds)) {
+                    $existingValues->get($field->id)?->delete();
+                    continue;
+                }
+
+                $raw = Arr::get($given, (string) $field->id, Arr::get($given, $field->key));
+                $value = $this->normaliseFieldValue($field, $raw, $errors);
+
+                $existing = $existingValues->get($field->id);
 
                 if ($value === null || $value === '') {
                     if ($field->is_required) {
-                        $errors['field_' . $field->key] = self::t('field_required', ['{field}' => $field->name]);
+                        $errors['field_' . $field->key] = $this->t('field_required', ['{field}' => $field->name]);
                     }
                     $existing?->delete();
                     continue;
@@ -141,14 +175,14 @@ class ProjectInput
                     continue;
                 }
                 if (! self::isSafeUrl($url)) {
-                    $errors['link_' . $position] = self::t('link_invalid');
+                    $errors['link_' . $position] = $this->t('link_invalid');
                     continue;
                 }
 
                 $buttonId = (int) Arr::get($entry, 'buttonId', 0);
                 $button = $buttonId ? $buttons->get($buttonId) : null;
                 if ($button && ! $button->allowsUrl($url)) {
-                    $errors['link_' . $button->key] = self::t('link_domain', ['{button}' => $button->label]);
+                    $errors['link_' . $button->key] = $this->t('link_domain', ['{button}' => $button->label]);
                     continue;
                 }
 
@@ -170,11 +204,35 @@ class ProjectInput
                 }
             }
 
-            // Required buttons must be filled.
+            // Required buttons must be filled — but only those applicable to this
+            // project's categories.
             foreach ($buttons as $button) {
-                if ($button->is_required && empty($seenButtons[$button->id])) {
-                    $errors['link_' . $button->key] = self::t('link_required', ['{button}' => $button->label]);
+                if ($button->is_required && empty($seenButtons[$button->id]) && self::appliesTo($button->category_ids, $projectCatIds)) {
+                    $errors['link_' . $button->key] = $this->t('link_required', ['{button}' => $button->label]);
                 }
+            }
+        }
+
+        // ---- Co-authors -----------------------------------------------------
+        // Each entry is a username (linked to that forum user) or a free-text
+        // name. Display-only — co-authors get no edit rights.
+        if (array_key_exists('coAuthors', $attrs)) {
+            $project->coAuthors()->delete();
+
+            $position = 0;
+            foreach (array_slice(array_values((array) $attrs['coAuthors']), 0, 10) as $entry) {
+                $name = trim((string) $entry);
+                if ($name === '') {
+                    continue;
+                }
+
+                $user = User::query()->where('username', $name)->first();
+                ProjectAuthor::create([
+                    'project_id' => $project->id,
+                    'user_id'    => $user?->id,
+                    'name'       => $user ? null : mb_substr($name, 0, 80),
+                    'position'   => $position++,
+                ]);
             }
         }
 
@@ -183,7 +241,16 @@ class ProjectInput
         }
     }
 
-    private static function normaliseFieldValue(ProjectField $field, $raw, array &$errors)
+    /** A field/button applies if it has no category restriction, or one of its
+     *  categories is among the project's categories. */
+    private static function appliesTo($categoryIds, array $projectCatIds): bool
+    {
+        $cats = array_map('intval', (array) ($categoryIds ?? []));
+
+        return empty($cats) || count(array_intersect($cats, $projectCatIds)) > 0;
+    }
+
+    private function normaliseFieldValue(ProjectField $field, $raw, array &$errors)
     {
         if ($raw === null) {
             return null;
@@ -196,7 +263,7 @@ class ProjectInput
                 $raw = trim((string) $raw);
                 if ($raw === '') return null;
                 if (! is_numeric($raw)) {
-                    $errors['field_' . $field->key] = self::t('field_number', ['{field}' => $field->name]);
+                    $errors['field_' . $field->key] = $this->t('field_number', ['{field}' => $field->name]);
                     return null;
                 }
                 return $raw;
@@ -204,7 +271,7 @@ class ProjectInput
                 $raw = trim((string) $raw);
                 if ($raw === '') return null;
                 if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw)) {
-                    $errors['field_' . $field->key] = self::t('field_date', ['{field}' => $field->name]);
+                    $errors['field_' . $field->key] = $this->t('field_date', ['{field}' => $field->name]);
                     return null;
                 }
                 return $raw;
@@ -212,7 +279,7 @@ class ProjectInput
                 $raw = trim((string) $raw);
                 if ($raw === '') return null;
                 if (! self::isSafeUrl($raw)) {
-                    $errors['field_' . $field->key] = self::t('field_url', ['{field}' => $field->name]);
+                    $errors['field_' . $field->key] = $this->t('field_url', ['{field}' => $field->name]);
                     return null;
                 }
                 return $raw;
@@ -221,7 +288,7 @@ class ProjectInput
                 if ($raw === '') return null;
                 $options = array_map('strval', (array) ($field->options ?? []));
                 if ($options && ! in_array($raw, $options, true)) {
-                    $errors['field_' . $field->key] = self::t('field_choice', ['{field}' => $field->name]);
+                    $errors['field_' . $field->key] = $this->t('field_choice', ['{field}' => $field->name]);
                     return null;
                 }
                 return $raw;

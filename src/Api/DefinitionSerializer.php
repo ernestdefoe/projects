@@ -49,6 +49,7 @@ class DefinitionSerializer
             'icon'        => $c->icon,
             'color'       => $c->color,
             'description' => $c->description,
+            'badgeId'     => $c->badge_id ? (int) $c->badge_id : null,
             'position'    => (int) $c->position,
         ];
     }
@@ -66,6 +67,7 @@ class DefinitionSerializer
             'suffix'     => $f->suffix,
             'isRequired' => (bool) $f->is_required,
             'onCard'     => (bool) $f->on_card,
+            'categoryIds' => array_values(array_map('intval', (array) ($f->category_ids ?? []))),
             'position'   => (int) $f->position,
         ];
     }
@@ -81,6 +83,7 @@ class DefinitionSerializer
             'allowCustomLabel' => (bool) $b->allow_custom_label,
             'isRequired'       => (bool) $b->is_required,
             'isPrimary'        => (bool) $b->is_primary,
+            'categoryIds'      => array_values(array_map('intval', (array) ($b->category_ids ?? []))),
             'position'         => (int) $b->position,
         ];
     }
