@@ -43,7 +43,8 @@ export default class FieldEditModal extends Modal {
           ])
         : null,
       this.text('icon', t('config.field_icon'), 'fas fa-tag'),
-      m('.Form-group.ProjectsFieldModal-inline', [this.text('prefix', t('config.field_prefix')), this.text('suffix', t('config.field_suffix'))]),
+      this.text('prefix', t('config.field_prefix')),
+      this.text('suffix', t('config.field_suffix')),
       m('.Form-group', m(Switch, { state: !!this.item.isRequired, onchange: (v: boolean) => (this.item.isRequired = v) }, t('config.field_required'))),
       m('.Form-group', m(Switch, { state: this.item.onCard !== false, onchange: (v: boolean) => (this.item.onCard = v) }, t('config.field_on_card'))),
       categoryRestrictionField(this.attrs.categories, this.item),
