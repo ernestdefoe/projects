@@ -43,6 +43,8 @@ ernestdefoe-projects:
     yes: "Yes"
     back: "Back to projects"
     discuss: "Discuss on forum"
+    show_more: "Show more"
+    show_less: "Show less"
     not_found: "This project could not be found."
     confirm_delete: "Delete this project? This cannot be undone."
     edit: "Edit"

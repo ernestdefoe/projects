@@ -438,7 +438,80 @@
 .ProjectForm-coAuthorAdd {
   display: flex;
   gap: 8px;
-  .FormControl { flex: 1; }
+  align-items: flex-start;
+  .ProjectForm-coAuthorSearch { flex: 1; position: relative; }
+  .FormControl { width: 100%; }
+}
+.ProjectForm-coAuthorResults {
+  position: absolute;
+  z-index: 5;
+  top: 100%; left: 0; right: 0;
+  margin-top: 4px;
+  background: var(--body-bg, #fff);
+  border: 1px solid var(--control-bg);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+.ProjectForm-coAuthorResult {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 7px 10px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  &:hover { background: var(--control-bg); }
+}
+.ProjectForm-coAuthorResultAvatar {
+  width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex: 0 0 auto;
+  display: grid; place-items: center; font-size: 12px; color: #fff; background: var(--muted-color);
+}
+.ProjectForm-coAuthorResultName { font-weight: 600; }
+.ProjectForm-coAuthorResultUser { color: var(--muted-color); font-size: 12px; }
+
+/* Author + co-authors byline — one line, no "with" */
+.ProjectCard-byline,
+.ProjectPage-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
+}
+.ProjectCard-byline { margin: 0 0 6px; }
+.ProjectPage-byline { margin: 2px 0 10px; }
+.ProjectCard-bylineSep,
+.ProjectPage-bylineSep,
+.ProjectCard-author--text,
+.ProjectPage-author--text { color: var(--muted-color); }
+
+/* Short description: clamp on cards with an inline expand toggle; full on the page */
+.ProjectCard-excerptWrap { margin: 0 0 8px; }
+.ProjectCard-excerpt { margin: 0; }
+.ProjectCard-excerpt.is-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ProjectCard-excerptToggle {
+  border: 0;
+  background: none;
+  padding: 3px 0 0;
+  cursor: pointer;
+  color: var(--link-color);
+  font-size: 12px;
+  font-weight: 600;
+  &:hover { text-decoration: underline; }
+}
+.ProjectPage-excerpt {
+  font-size: 15px;
+  color: var(--muted-color);
+  line-height: 1.5;
+  margin: 0 0 14px;
 }
 
 /* Featured-project badge — sits beside FoF Badges' .PrimaryBadge next to the

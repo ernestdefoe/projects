@@ -27,6 +27,7 @@ export default class ProjectFormModal extends Modal {
   links: Record<number, { url: string; label: string }> = {};
   coAuthorEntries: string[] = [];
   newCoAuthor = '';
+  coAuthorResults: any[] = [];
   discussionId = '';
 
   uploading = false;
@@ -259,20 +260,70 @@ export default class ProjectFormModal extends Modal {
           )
         : null,
       m('.ProjectForm-coAuthorAdd', [
-        m('input.FormControl', {
-          placeholder: t('form.coauthors_placeholder'),
-          value: this.newCoAuthor,
-          oninput: (e: any) => (this.newCoAuthor = e.target.value),
-          onkeydown: (e: any) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              this.addCoAuthor();
-            }
-          },
-        }),
+        m('.ProjectForm-coAuthorSearch', [
+          m('input.FormControl', {
+            placeholder: t('form.coauthors_placeholder'),
+            value: this.newCoAuthor,
+            oninput: (e: any) => {
+              this.newCoAuthor = e.target.value;
+              this.searchUsers(e.target.value);
+            },
+            onkeydown: (e: any) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                this.addCoAuthor();
+              }
+            },
+          }),
+          this.coAuthorResults.length
+            ? m(
+                '.ProjectForm-coAuthorResults',
+                this.coAuthorResults.map((u: any) =>
+                  m(
+                    'button.ProjectForm-coAuthorResult',
+                    { type: 'button', onclick: () => this.selectCoAuthor(u.username()) },
+                    [
+                      u.avatarUrl()
+                        ? m('img.ProjectForm-coAuthorResultAvatar', { src: u.avatarUrl(), alt: '' })
+                        : m('span.ProjectForm-coAuthorResultAvatar.ProjectAvatar--initial', (u.displayName() || '?').charAt(0).toUpperCase()),
+                      m('span.ProjectForm-coAuthorResultName', u.displayName()),
+                      m('span.ProjectForm-coAuthorResultUser', '@' + u.username()),
+                    ]
+                  )
+                )
+              )
+            : null,
+        ]),
         Button.component({ className: 'Button', icon: 'fas fa-plus', onclick: () => this.addCoAuthor() }, t('form.coauthors_add')),
       ]),
     ]);
+  }
+
+  /** Live forum-user search for the co-author picker (usernames resolve to the
+   *  linked user on save; free text is still accepted via Enter / the + button). */
+  searchUsers(q: string) {
+    q = (q || '').trim();
+    if (q.length < 2) {
+      this.coAuthorResults = [];
+      return;
+    }
+    app.store
+      .find('users', { filter: { q }, page: { limit: 5 } })
+      .then((users: any[]) => {
+        this.coAuthorResults = (users || []).filter((u: any) => !this.coAuthorEntries.includes(u.username()));
+        m.redraw();
+      })
+      .catch(() => {
+        this.coAuthorResults = [];
+      });
+  }
+
+  selectCoAuthor(username: string) {
+    if (username && !this.coAuthorEntries.includes(username) && this.coAuthorEntries.length < 10) {
+      this.coAuthorEntries.push(username);
+    }
+    this.newCoAuthor = '';
+    this.coAuthorResults = [];
   }
 
   addCoAuthor() {
@@ -281,6 +332,7 @@ export default class ProjectFormModal extends Modal {
       this.coAuthorEntries.push(v);
     }
     this.newCoAuthor = '';
+    this.coAuthorResults = [];
   }
 
   toggleCategory(id: number) {

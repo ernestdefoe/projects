@@ -13,6 +13,8 @@ const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-project
  * click from bubbling.
  */
 export default class ProjectCard extends Component {
+  excerptExpanded = false;
+
   view() {
     const p: Project = this.attrs.project;
     const onLike: (p: Project) => void = this.attrs.onLike;
@@ -46,23 +48,27 @@ export default class ProjectCard extends Component {
 
           m('h3.ProjectCard-title', p.title),
 
-          p.author
-            ? m('a.ProjectCard-author', {
-                href: app.route('user', { username: p.author.username }),
-                onclick: (e: Event) => e.stopPropagation(),
-              }, [
-                authorAvatar(p.author),
-                m('span', p.author.displayName),
-              ])
-            : null,
-
-          p.coAuthors && p.coAuthors.length
-            ? m('.ProjectCard-coAuthors', t('with') + ' ' + p.coAuthors.map((a) => a.displayName || a.username || a.name).join(', '))
-            : null,
+          (() => {
+            const people = [...(p.author ? [p.author] : []), ...(p.coAuthors || [])];
+            return people.length
+              ? m('.ProjectCard-byline', people.map((person: any, i: number) => {
+                  const name = person.displayName || person.name || person.username;
+                  return [
+                    i > 0 ? m('span.ProjectCard-bylineSep', ', ') : null,
+                    person.username
+                      ? m('a.ProjectCard-author', {
+                          href: app.route('user', { username: person.username }),
+                          onclick: (e: Event) => e.stopPropagation(),
+                        }, [authorAvatar(person), m('span', name)])
+                      : m('span.ProjectCard-author.ProjectCard-author--text', name),
+                  ];
+                }))
+              : null;
+          })(),
 
           this.cardFields(p),
 
-          p.excerpt ? m('p.ProjectCard-excerpt', p.excerpt) : null,
+          p.excerpt ? this.excerptBlock(p) : null,
         ]),
 
         m('.ProjectCard-footer', [
@@ -133,5 +139,27 @@ export default class ProjectCard extends Component {
 
   open(p: Project) {
     m.route.set(app.route('projects.show', { slug: p.slug }));
+  }
+
+  /** Short description, clamped to a few lines with an inline show-more toggle so
+   *  long ones stay readable without bloating the card or leaving the page. */
+  excerptBlock(p: Project) {
+    const long = (p.excerpt || '').length > 140;
+    return m('.ProjectCard-excerptWrap', [
+      m('p.ProjectCard-excerpt' + (long && !this.excerptExpanded ? '.is-clamped' : ''), p.excerpt),
+      long
+        ? m(
+            'button.ProjectCard-excerptToggle',
+            {
+              type: 'button',
+              onclick: (e: Event) => {
+                e.stopPropagation();
+                this.excerptExpanded = !this.excerptExpanded;
+              },
+            },
+            this.excerptExpanded ? t('show_less') : t('show_more')
+          )
+        : null,
+    ]);
   }
 }

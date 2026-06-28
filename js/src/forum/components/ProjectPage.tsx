@@ -91,14 +91,19 @@ export default class ProjectPage extends Page {
 
         m('h1.ProjectPage-title', p.title),
 
-        p.author
-          ? m(Link, { href: app.route('user', { username: p.author.username }), className: 'ProjectPage-author' }, [
-              authorAvatar(p.author),
-              m('span', p.author.displayName),
-            ])
-          : null,
+        (() => {
+          const people = [...(p.author ? [p.author] : []), ...(p.coAuthors || [])];
+          return people.length
+            ? m('.ProjectPage-byline', people.map((person: any, i: number) => [
+                i > 0 ? m('span.ProjectPage-bylineSep', ', ') : null,
+                person.username
+                  ? m(Link, { href: app.route('user', { username: person.username }), className: 'ProjectPage-author' }, [authorAvatar(person), m('span', person.displayName || person.username)])
+                  : m('span.ProjectPage-author.ProjectPage-author--text', person.name || person.displayName),
+              ]))
+            : null;
+        })(),
 
-        p.coAuthors && p.coAuthors.length ? this.coAuthorsLine(p) : null,
+        p.excerpt ? m('p.ProjectPage-excerpt', p.excerpt) : null,
 
         this.fields(p),
 
