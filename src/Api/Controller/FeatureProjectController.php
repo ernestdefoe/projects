@@ -47,6 +47,9 @@ class FeatureProjectController implements RequestHandlerInterface
 
         $project->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user']);
 
-        return new JsonResponse(['data' => $this->serializer->serialize($project, $actor)]);
+        // Pass $full=true so the response includes contentHtml — otherwise the
+        // frontend (which replaces its project with this data) loses the rendered
+        // description after toggling featured.
+        return new JsonResponse(['data' => $this->serializer->serialize($project, $actor, true, $request)]);
     }
 }
