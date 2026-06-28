@@ -49,6 +49,18 @@
 // bar can't mismatch a themed modal border/shadow.
 .ProjectsFieldModal, .ProjectsButtonModal, .ProjectsCategoryModal {
   .Modal-content { overflow: hidden; }
+
+  // Uniform vertical rhythm. The gap between fields must come ONLY from the
+  // form-group margin — not from each control's own trailing space, which
+  // varies by type (text inputs vs. the colour picker / number / switch) and
+  // made some labels crowd the box above them.
+  .Modal-body > .Form-group { margin: 0 0 18px; }
+  .Modal-body > .Form-group:last-child { margin-bottom: 0; }
+  .Modal-body > .Form-group > label { display: block; margin: 0 0 5px; font-weight: 600; }
+  .Modal-body .FormControl,
+  .Modal-body input[type='color'],
+  .Modal-body input[type='number'] { margin-bottom: 0; }
+  .Modal-body .helpText { margin: 5px 0 0; }
 }
 
 .ProjectsConfig-catPick {
