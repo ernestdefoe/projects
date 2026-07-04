@@ -41,11 +41,48 @@
     pointer-events: none;
   }
 
+  // Category filter as pill buttons (replaces the old dropdown).
+  &-catPills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -10px 0 22px;
+  }
+
+  &-catPill {
+    --project-accent: var(--primary-color);
+    border: 1px solid var(--control-bg);
+    background: none;
+    border-radius: 20px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text-color);
+
+    i { color: var(--project-accent); margin-right: 4px; }
+
+    &:hover { border-color: var(--project-accent); }
+
+    &.is-on {
+      color: #fff;
+      background: var(--project-accent);
+      border-color: var(--project-accent);
+
+      i { color: #fff; }
+    }
+  }
+
+  // The class now sits on core's .Select wrapper span (the native select
+  // lives inside it and gets core's cross-theme styling + caret).
   &-filter {
-    width: auto;
     flex: 0 0 auto;
-    // Don't let a native select collapse narrower than its label.
-    min-width: 140px;
+
+    .Select-input {
+      // Don't let the select collapse narrower than its label.
+      min-width: 140px;
+      width: 100%;
+    }
   }
 
   &-loading,
@@ -142,15 +179,21 @@
     margin-bottom: 8px;
   }
 
+  // Now a <button> (clicking filters by the tag) — reset chrome accordingly.
   &-cat {
     --project-accent: var(--primary-color);
     font-size: 11px;
     font-weight: 600;
     padding: 2px 9px;
+    border: 0;
     border-radius: 20px;
     color: var(--project-accent);
     background: color-mix(in srgb, var(--project-accent) 14%, transparent);
     white-space: nowrap;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover { background: color-mix(in srgb, var(--project-accent) 26%, transparent); }
   }
 
   &-title {
@@ -204,15 +247,14 @@
   &-fieldName { color: var(--muted-color); }
   &-fieldVal { color: var(--text-color); font-weight: 600; }
 
+  // Typography only — the 3-line clamp lives on `.is-clamped` (toggled by
+  // Show more/Show less). Clamping unconditionally here made the toggle a
+  // no-op: the class came off but this rule kept the text clamped.
   &-excerpt {
     font-size: 13.5px;
     color: var(--muted-color);
     line-height: 1.5;
     margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
 
   &-footer {
@@ -334,9 +376,15 @@
 
 /* Submission form */
 .ProjectFormModal {
+  // Size the OUTER .Modal element (this class + Modal--large land on it), not
+  // just .Modal-content: themes draw the border/shadow on the outer box, so a
+  // narrower inner content left a wider "ghost" outline around the form —
+  // the modal/shadow mismatch from the discuss thread.
+  &.Modal { max-width: 640px; }
+
   // overflow:hidden clips the header to the content's rounded corners, so the
   // square-cornered title bar can't poke past a themed modal border/shadow.
-  .Modal-content { max-width: 640px; overflow: hidden; }
+  .Modal-content { overflow: hidden; }
 
   // Breathing room between fields — the groups were running together.
   .Modal-body > .Form-group { margin-bottom: 18px; }
@@ -383,6 +431,8 @@
   }
 
   .ProjectForm-req { color: var(--alert-error-color, #c53030); }
+  // Parameter description sits between the label and its input.
+  .ProjectForm-fieldHelp { margin: -2px 0 5px; font-size: 12px; color: var(--muted-color); }
   .ProjectForm-sectionLabel { font-weight: 700; display: block; margin: 18px 0 6px; }
   .ProjectForm-linkRow { display: flex; gap: 8px; }
   .ProjectForm-linkLabel { max-width: 180px; }

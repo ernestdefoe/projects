@@ -142,6 +142,7 @@ ernestdefoe-projects:
       field_icon: "Icon (FontAwesome class)"
       field_color: "Color"
       field_description: "Description"
+      field_param_description: "Description (shown under the parameter's name in the submission form)"
       category_badge: "FoF Badge to award (badge ID)"
       category_badge_help: "Requires fof/badges. Grant this badge when a member publishes a project in this tag (e.g. Book → Writer). Leave blank for none."
       field_type: "Type"

@@ -157,9 +157,13 @@ export default class ProjectPage extends Page {
   management(p: Project) {
     const items: any[] = [];
 
-    if (p.canModerate && p.status === 'pending') {
+    // Approve is offered for REJECTED projects too, so a moderator can change
+    // their mind after declining. Reject only makes sense while pending.
+    if (p.canModerate && (p.status === 'pending' || p.status === 'rejected')) {
       items.push(Button.component({ className: 'Button Button--primary', icon: 'fas fa-check', onclick: () => this.moderate('approve') }, t('moderate.approve')));
-      items.push(Button.component({ className: 'Button', icon: 'fas fa-xmark', onclick: () => this.moderate('reject') }, t('moderate.reject')));
+      if (p.status === 'pending') {
+        items.push(Button.component({ className: 'Button', icon: 'fas fa-xmark', onclick: () => this.moderate('reject') }, t('moderate.reject')));
+      }
     }
     if (p.canFeature) {
       items.push(Button.component({
@@ -180,9 +184,20 @@ export default class ProjectPage extends Page {
 
   like() {
     if (!app.session.user || !this.project) return;
-    likeProject(this.project.id)
+    const p = this.project;
+    // Optimistic: flip immediately (waiting on the round-trip made the button
+    // feel ~a second late), reconcile with the server's copy, roll back on error.
+    const wasLiked = !!p.liked;
+    p.liked = !wasLiked;
+    p.likesCount += wasLiked ? -1 : 1;
+    likeProject(p.id)
       .then((res) => { this.project = res.data; m.redraw(); })
-      .catch(() => app.alerts.show({ type: 'error' }, t('like_error')));
+      .catch(() => {
+        p.liked = wasLiked;
+        p.likesCount += wasLiked ? 1 : -1;
+        m.redraw();
+        app.alerts.show({ type: 'error' }, t('like_error'));
+      });
   }
 
   feature() {

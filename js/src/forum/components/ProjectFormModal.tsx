@@ -150,6 +150,9 @@ export default class ProjectFormModal extends Modal {
         return m('button.ProjectForm-catChip' + (on ? '.is-on' : ''), {
           type: 'button',
           style: c.color ? { '--project-accent': c.color } : undefined,
+          // The admin-written category description, surfaced on hover — it
+          // previously existed in the DB but displayed nowhere.
+          title: c.description || undefined,
           onclick: () => this.toggleCategory(c.id),
         }, [c.icon ? m('i', { className: c.icon }) : null, ' ', c.name]);
       })),
@@ -185,6 +188,8 @@ export default class ProjectFormModal extends Modal {
     const val = this.fieldValues[f.id] ?? '';
     const set = (v: string) => (this.fieldValues[f.id] = v);
     const label = m('label', [f.icon ? m('i', { className: f.icon }) : null, ' ', f.name, f.isRequired ? m('span.ProjectForm-req', ' *') : null]);
+    // Parameter description straight under the name, as requested in the thread.
+    const help = f.description ? m('p.helpText.ProjectForm-fieldHelp', f.description) : null;
 
     let input;
     switch (f.type) {
@@ -198,7 +203,7 @@ export default class ProjectFormModal extends Modal {
         ]);
         break;
       case 'boolean':
-        return m('.Form-group.ProjectForm-field', m(Switch, { state: val === '1', onchange: (v: boolean) => set(v ? '1' : '') }, [f.name]));
+        return m('.Form-group.ProjectForm-field', [m(Switch, { state: val === '1', onchange: (v: boolean) => set(v ? '1' : '') }, [f.name]), help]);
       case 'number':
         input = m('input.FormControl', { type: 'number', value: val, oninput: (e: any) => set(e.target.value) });
         break;
@@ -212,7 +217,7 @@ export default class ProjectFormModal extends Modal {
         input = m('input.FormControl', { value: val, oninput: (e: any) => set(e.target.value) });
     }
 
-    return m('.Form-group.ProjectForm-field', [label, input]);
+    return m('.Form-group.ProjectForm-field', [label, help, input]);
   }
 
   buttonsSection() {

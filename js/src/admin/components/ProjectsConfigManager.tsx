@@ -102,7 +102,7 @@ export default class ProjectsConfigManager extends Component {
   }
 
   edit(modal: any, item?: any) {
-    app.modal.show(modal, { item, categories: this.config.categories, onsave: () => this.refresh() });
+    app.modal.show(modal, { item, categories: this.config.categories, badges: this.config.badges || [], onsave: () => this.refresh() });
   }
 
   confirmDelete(remove: (id: number) => Promise<void>, id: number) {

@@ -2,6 +2,8 @@ import app from 'flarum/forum/app';
 import Page from 'flarum/common/components/Page';
 import Button from 'flarum/common/components/Button';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
+import Select from 'flarum/common/components/Select';
+import extractText from 'flarum/common/utils/extractText';
 import ProjectCard from './ProjectCard';
 import ProjectFormModal from './ProjectFormModal';
 import { config, listProjects, likeProject, type ListParams, type Project } from '../../common/api';
@@ -98,11 +100,31 @@ export default class ProjectsPage extends Page {
     this.debounce = setTimeout(() => this.load(), 350);
   }
 
+  /** One category pill; null = the "all categories" pill. */
+  catPill(c: { slug: string; name: string; icon?: string | null; color?: string | null; description?: string | null } | null) {
+    const slug = c ? c.slug : '';
+    const on = this.category === slug;
+    return m('button.ProjectsPage-catPill' + (on ? '.is-on' : ''), {
+      type: 'button',
+      style: c?.color ? { '--project-accent': c.color } : undefined,
+      title: c?.description || undefined,
+      onclick: () => {
+        this.category = slug;
+        this.load();
+      },
+    }, [c?.icon ? m('i', { className: c.icon }) : null, c?.icon ? ' ' : null, c ? c.name : t('all_categories')]);
+  }
+
   like(project: Project) {
     if (!app.session.user) {
       app.modal.show(() => import('flarum/forum/components/LogInModal'));
       return;
     }
+    // Optimistic: flip immediately (waiting on the round-trip made the button
+    // feel ~a second late), reconcile with the server's copy, roll back on error.
+    const wasLiked = !!project.liked;
+    project.liked = !wasLiked;
+    project.likesCount += wasLiked ? -1 : 1;
     likeProject(project.id)
       .then((res) => {
         const updated = res.data;
@@ -110,7 +132,12 @@ export default class ProjectsPage extends Page {
         if (i >= 0) this.projects[i] = updated;
         m.redraw();
       })
-      .catch(() => app.alerts.show({ type: 'error' }, t('like_error')));
+      .catch(() => {
+        project.liked = wasLiked;
+        project.likesCount += wasLiked ? 1 : -1;
+        m.redraw();
+        app.alerts.show({ type: 'error' }, t('like_error'));
+      });
   }
 
   add() {
@@ -141,37 +168,45 @@ export default class ProjectsPage extends Page {
           }),
         ]),
 
-        cfg.categories.length
-          ? m('select.FormControl.ProjectsPage-filter', {
-              value: this.category,
-              onchange: (e: any) => { this.category = e.target.value; this.load(); },
-            }, [
-              m('option', { value: '' }, t('all_categories')),
-              ...cfg.categories.map((c) => m('option', { value: c.slug }, c.name)),
-            ])
-          : null,
-
-        m('select.FormControl.ProjectsPage-filter', {
+        // Core's Select component instead of raw native selects: themes style
+        // .Select consistently, while bare FormControl selects inherited
+        // whatever height/line-height the theme set and clipped their labels
+        // (the "filter labels aren't displaying properly" report). The
+        // category filter is a pill row below instead of a dropdown.
+        m(Select, {
+          wrapperAttrs: { className: 'ProjectsPage-filter' },
           value: this.sort,
-          onchange: (e: any) => { this.sort = e.target.value; this.load(); },
-        }, [
-          m('option', { value: 'recent' }, t('sort.recent')),
-          m('option', { value: 'popular' }, t('sort.popular')),
-          m('option', { value: 'title' }, t('sort.title')),
-        ]),
+          options: {
+            recent: extractText(t('sort.recent')),
+            popular: extractText(t('sort.popular')),
+            title: extractText(t('sort.title')),
+          },
+          onchange: (v: string) => { this.sort = v; this.load(); },
+        }),
 
         canModerate
-          ? m('select.FormControl.ProjectsPage-filter', {
+          ? m(Select, {
+              wrapperAttrs: { className: 'ProjectsPage-filter' },
               value: this.status,
-              onchange: (e: any) => { this.status = e.target.value; this.load(); },
-            }, [
-              m('option', { value: '' }, t('status.all')),
-              m('option', { value: 'pending' }, t('status.pending')),
-              m('option', { value: 'published' }, t('status.published')),
-              m('option', { value: 'rejected' }, t('status.rejected')),
-            ])
+              options: {
+                '': extractText(t('status.all')),
+                pending: extractText(t('status.pending')),
+                published: extractText(t('status.published')),
+                rejected: extractText(t('status.rejected')),
+              },
+              onchange: (v: string) => { this.status = v; this.load(); },
+            })
           : null,
       ]),
+
+      // Category filter as pill buttons — more visual than the old dropdown,
+      // and each pill carries its description as a hover tooltip.
+      cfg.categories.length
+        ? m('.ProjectsPage-catPills', [
+            this.catPill(null),
+            ...cfg.categories.map((c) => this.catPill(c)),
+          ])
+        : null,
 
       this.loading
         ? m('.ProjectsPage-loading', m(LoadingIndicator, { size: 'large' }))

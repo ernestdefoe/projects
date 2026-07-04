@@ -35,6 +35,7 @@ class SaveFieldController implements RequestHandlerInterface
             throw new ValidationException(['name' => $this->translator->trans('ernestdefoe-projects.api.field_name_required')]);
         }
         $field->name = $name;
+        $field->description = trim((string) Arr::get($attrs, 'description', '')) ?: null;
 
         $type = (string) Arr::get($attrs, 'type', 'text');
         $field->type = in_array($type, ProjectField::TYPES, true) ? $type : 'text';

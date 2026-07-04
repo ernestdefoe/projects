@@ -65,6 +65,21 @@ class ProjectRepository
 
         $this->db->transaction(function () use ($project, $attrs, $actor) {
             $this->input->apply($project, $attrs, false);
+
+            // Editing a declined project RESUBMITS it: back to pending review
+            // (or straight to published for members who skip moderation).
+            // Previously the edit saved but the project stayed rejected
+            // forever — "the user can edit a declined project, but it doesn't
+            // lead anywhere." Moderators editing someone's rejected project
+            // don't trigger this; they have explicit approve/reject controls.
+            $isModerator = $actor->isAdmin() || $actor->hasPermission('projects.moderate');
+            if ($project->status === Project::STATUS_REJECTED && ! $isModerator) {
+                $project->status = $actor->hasPermission('projects.skipModeration')
+                    ? Project::STATUS_PUBLISHED
+                    : Project::STATUS_PENDING;
+                $project->rejection_reason = null;
+            }
+
             $project->save();
             $this->input->syncRelations($project, $attrs, $actor);
         });

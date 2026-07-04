@@ -62,7 +62,11 @@ class AwardBadgeOnPublish
                 return;
             }
 
-            $badge->users()->attach($userId, ['assigned_at' => \Carbon\Carbon::now()]);
+            // fof/badges' pivot columns are earned_at/granted_by/reason —
+            // attaching with a non-existent `assigned_at` column threw an SQL
+            // error the catch below swallowed, so badges were silently never
+            // awarded (the bug behind "the badge isn't being assigned").
+            $badge->users()->attach($userId, ['earned_at' => \Carbon\Carbon::now()]);
         } catch (\Throwable $e) {
             $this->log->warning('[projects] failed to award badge ' . $badgeId . ': ' . $e->getMessage());
         }

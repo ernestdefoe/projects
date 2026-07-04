@@ -37,7 +37,17 @@ export default class ProjectCard extends Component {
             ? m(
                 '.ProjectCard-cats',
                 p.categories.slice(0, 3).map((c) =>
-                  m('span.ProjectCard-cat', { style: c.color ? { '--project-accent': c.color } : undefined }, [
+                  // Clicking a tag on a card jumps to that tag's filter — the
+                  // same behavior as clicking a tag on the project page.
+                  m('button.ProjectCard-cat', {
+                    type: 'button',
+                    style: c.color ? { '--project-accent': c.color } : undefined,
+                    title: c.description || undefined,
+                    onclick: (e: Event) => {
+                      e.stopPropagation();
+                      m.route.set(app.route('projects') + '?category=' + c.slug);
+                    },
+                  }, [
                     c.icon ? m('i', { className: c.icon }) : null,
                     ' ',
                     c.name,

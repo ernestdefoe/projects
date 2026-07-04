@@ -19,6 +19,7 @@ export type FieldType = 'text' | 'textarea' | 'number' | 'date' | 'url' | 'selec
 export interface FieldDef {
   id: number;
   name: string;
+  description?: string | null;
   key: string;
   type: FieldType;
   options: string[];
@@ -115,6 +116,8 @@ export interface ProjectsConfig {
   categories: CategoryDef[];
   fields: FieldDef[];
   buttons: ButtonDef[];
+  /** Available FoF badges for the pickers; empty when fof/badges is absent. */
+  badges?: { id: number; name: string }[];
 }
 
 export interface ListParams {

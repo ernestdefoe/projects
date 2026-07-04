@@ -31,6 +31,7 @@ export default class FieldEditModal extends Modal {
   content() {
     return m('.Modal-body', [
       this.text('name', t('config.field_name')),
+      this.text('description', t('config.field_param_description')),
       m('.Form-group', [
         m('label', t('config.field_type')),
         m('select.FormControl', { value: this.item.type, onchange: (e: any) => (this.item.type = e.target.value) },
@@ -65,6 +66,7 @@ export default class FieldEditModal extends Modal {
     saveField(
       {
         name: this.item.name,
+        description: this.item.description,
         type: this.item.type,
         options,
         icon: this.item.icon,

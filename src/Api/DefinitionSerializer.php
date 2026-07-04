@@ -19,7 +19,28 @@ class DefinitionSerializer
             'categories' => self::categories(),
             'fields'     => self::fields(),
             'buttons'    => self::buttons(),
+            'badges'     => self::badges(),
         ];
+    }
+
+    /**
+     * The available FoF badges (id + name), so the admin picks a badge from a
+     * list instead of hunting for a numeric ID nothing surfaces. Empty when
+     * fof/badges isn't installed. (Badge names are public in fof/badges, so
+     * shipping them in the shared config leaks nothing.)
+     */
+    public static function badges(): array
+    {
+        if (! class_exists(\FoF\Badges\Badge::class)) {
+            return [];
+        }
+
+        try {
+            return \FoF\Badges\Badge::query()->orderBy('name')->get()
+                ->map(fn ($b) => ['id' => (int) $b->id, 'name' => (string) $b->name])->all();
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     public static function categories(): array
@@ -59,6 +80,7 @@ class DefinitionSerializer
         return [
             'id'         => (int) $f->id,
             'name'       => $f->name,
+            'description' => $f->description,
             'key'        => $f->key,
             'type'       => $f->type,
             'options'    => array_values((array) ($f->options ?? [])),

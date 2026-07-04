@@ -34,12 +34,24 @@ export default class CategoryEditModal extends Modal {
       this.field('description', t('config.field_description'), 'text'),
       m('.Form-group', [
         m('label', t('config.category_badge')),
-        m('input.FormControl', {
-          type: 'number',
-          placeholder: '—',
-          value: this.item.badgeId || '',
-          oninput: (e: any) => (this.item.badgeId = e.target.value ? Number(e.target.value) : null),
-        }),
+        // A picker over the actual badges — asking for a raw numeric ID sent
+        // admins hunting for a number fof/badges never shows anywhere.
+        (this.attrs.badges || []).length
+          ? m('select.FormControl', {
+              value: String(this.item.badgeId || ''),
+              onchange: (e: any) => (this.item.badgeId = e.target.value ? Number(e.target.value) : null),
+            }, [
+              m('option', { value: '' }, '—'),
+              ...(this.attrs.badges as { id: number; name: string }[]).map((b) =>
+                m('option', { value: String(b.id) }, `${b.name} (#${b.id})`)
+              ),
+            ])
+          : m('input.FormControl', {
+              type: 'number',
+              placeholder: '—',
+              value: this.item.badgeId || '',
+              oninput: (e: any) => (this.item.badgeId = e.target.value ? Number(e.target.value) : null),
+            }),
         m('span.helpText', t('config.category_badge_help')),
       ]),
       m('.Form-group', Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, t('config.save'))),
