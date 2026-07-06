@@ -58,14 +58,25 @@ class AwardBadgeOnPublish
                 return;
             }
 
-            if ($badge->users()->where('users.id', $userId)->exists()) {
+            // Prefer fof/badges' own awarder: it skips duplicates, runs the
+            // badge's actions (e.g. add-to-group), fires BadgeAwarded, AND
+            // sends the "you earned a badge" notification — which the raw pivot
+            // attach never did (the "users don't get notified" report).
+            if (class_exists(\FoF\Badges\BadgeAwarder::class)) {
+                $user = \Flarum\User\User::find($userId);
+                if ($user) {
+                    resolve(\FoF\Badges\BadgeAwarder::class)->award($user, $badge);
+                }
+
                 return;
             }
 
-            // fof/badges' pivot columns are earned_at/granted_by/reason —
-            // attaching with a non-existent `assigned_at` column threw an SQL
-            // error the catch below swallowed, so badges were silently never
-            // awarded (the bug behind "the badge isn't being assigned").
+            // Older fof/badges without BadgeAwarder: attach directly (no
+            // notification, but the award still lands). Pivot columns are
+            // earned_at/granted_by/reason.
+            if ($badge->users()->where('users.id', $userId)->exists()) {
+                return;
+            }
             $badge->users()->attach($userId, ['earned_at' => \Carbon\Carbon::now()]);
         } catch (\Throwable $e) {
             $this->log->warning('[projects] failed to award badge ' . $badgeId . ': ' . $e->getMessage());

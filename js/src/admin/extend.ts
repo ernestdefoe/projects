@@ -1,6 +1,7 @@
 import Extend from 'flarum/common/extenders';
 import app from 'flarum/admin/app';
 import ProjectsConfigManager from './components/ProjectsConfigManager';
+import { publishBadgeOptions } from './badgeOptions';
 
 declare const m: any;
 const t = (k: string) => app.translator.trans('ernestdefoe-projects.admin.' + k);
@@ -23,7 +24,8 @@ export default [
     }))
     .setting(() => ({
       setting: 'ernestdefoe-projects.publish_badge_id',
-      type: 'number',
+      type: 'select',
+      options: publishBadgeOptions(),
       label: t('settings.publish_badge_id'),
       help: t('settings.publish_badge_id_help'),
     }))
