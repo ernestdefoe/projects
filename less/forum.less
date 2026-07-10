@@ -473,14 +473,43 @@
       resize: none;
     }
 
-    // Toolbar wraps instead of overflowing when the modal is narrow.
     .TextEditor-controls {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 2px;
-      padding: 5px 8px;
+      gap: 6px 4px;
+      margin: 0;
+      padding: 6px 12px;
       border-top: 1px solid var(--control-bg);
+    }
+    // Core bleeds the toolbar out with negative margins to edge-align it in the
+    // composer; there's no padding to absorb that here, so it stuck out left.
+    .TextEditor-toolbar,
+    .TextEditor-toolbar .MarkdownToolbar { margin: 0; }
+
+    // The FoF upload buttons render OUTSIDE the editor (to the left) when
+    // TextEditor is used in a modal rather than the composer — they were the
+    // "icons busting out". Hide them here; drag-and-drop upload still works and
+    // the image-embed button remains in the toolbar.
+    .item-fof-upload,
+    .item-fof-upload-media { display: none; }
+
+    // Spread the toolbar buttons across the width with a comfortable gap at each
+    // nesting level (the buttons otherwise touch and cluster on the left).
+    // Plain flex + gap only — space-between / display:contents both overflowed
+    // the row to the left here, so we avoid them.
+    .TextEditor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+
+      .MarkdownToolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 12px;
+      }
     }
 
     // We provide the form's own submit button — hide the editor's.
