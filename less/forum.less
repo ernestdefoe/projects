@@ -444,9 +444,22 @@
   // don't have here). Works for both the plain-textarea and rich (tiptap)
   // drivers, whichever a site has installed.
   .ProjectForm-content .TextEditor {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
     border: 1px solid var(--control-bg);
     border-radius: var(--border-radius, 4px);
     background: var(--body-bg, #fff);
+
+    // Make the editor span the full field width (it otherwise shrinks to fit the
+    // placeholder line). Force every wrapper in the driver's chain to fill.
+    .TextEditor-editorContainer,
+    .ComposerBody-mentionsWrapper,
+    .ComposerBody-emojiWrapper,
+    .TextEditor-editor {
+      width: 100%;
+      box-sizing: border-box;
+    }
 
     .TextEditor-editor {
       min-height: 165px;
