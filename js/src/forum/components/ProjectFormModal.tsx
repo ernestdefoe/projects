@@ -2,6 +2,9 @@ import app from 'flarum/forum/app';
 import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
 import Switch from 'flarum/common/components/Switch';
+import Select from 'flarum/common/components/Select';
+import TextEditor from 'flarum/common/components/TextEditor';
+import extractText from 'flarum/common/utils/extractText';
 import { config, getProject, saveProject, uploadImage, type ButtonDef, type FieldDef, type Project } from '../../common/api';
 
 declare const m: any;
@@ -29,6 +32,11 @@ export default class ProjectFormModal extends Modal {
   newCoAuthor = '';
   coAuthorResults: any[] = [];
   discussionId = '';
+
+  // A stable holder that Flarum's TextEditor attaches its editor driver to
+  // (composer.editor) and its toolbar buttons read back from. We don't run a
+  // full composer here — this object just plays that role.
+  contentComposer: any = {};
 
   uploading = false;
   loading = false;
@@ -78,7 +86,7 @@ export default class ProjectFormModal extends Modal {
 
     return m('.Modal-body', [
       m('.Form-group', [
-        m('label', t('form.title_label')),
+        m('label', [t('form.title_label'), m('span.ProjectForm-req', ' *')]),
         m('input.FormControl', { value: this.titleText, oninput: (e: any) => (this.titleText = e.target.value), maxlength: 255 }),
       ]),
 
@@ -99,6 +107,8 @@ export default class ProjectFormModal extends Modal {
           ]),
           this.image ? Button.component({ className: 'Button Button--text', onclick: () => (this.image = null) }, t('form.image_remove')) : null,
         ]),
+        // Tell people the size cap up front, so an oversize file isn't a surprise.
+        m('span.helpText', t('form.image_help', { max: Number(app.forum.attribute('projectsMaxImageMb')) || 4 })),
       ]),
 
       m('.Form-group', [
@@ -112,9 +122,18 @@ export default class ProjectFormModal extends Modal {
         m('span.helpText', t('form.excerpt_help', { count: (app.forum.attribute('projectsExcerptLimit') || 280) - this.excerpt.length })),
       ]),
 
-      m('.Form-group', [
+      m('.Form-group.ProjectForm-content', [
         m('label', t('form.content_label')),
-        m('textarea.FormControl', { rows: 6, value: this.contentText, oninput: (e: any) => (this.contentText = e.target.value) }),
+        // Flarum's own composer editor — same formatting toolbar (bold, italic,
+        // links, lists…) people use for posts, since the details render through
+        // the same formatter. Far more professional than a bare textarea.
+        m(TextEditor, {
+          composer: this.contentComposer,
+          value: this.contentText,
+          disabled: this.loading,
+          placeholder: extractText(t('form.content_placeholder')),
+          onchange: (v: string) => { this.contentText = v; },
+        }),
       ]),
 
       this.cfg.categories.length ? this.categorySection() : null,
@@ -125,11 +144,12 @@ export default class ProjectFormModal extends Modal {
       m('.Form-group', [
         m('label', t('form.discussion_label')),
         m('input.FormControl', {
-          type: 'number',
+          type: 'text',
           placeholder: t('form.discussion_placeholder'),
           value: this.discussionId,
           oninput: (e: any) => (this.discussionId = e.target.value),
         }),
+        m('span.helpText', t('form.discussion_help')),
       ]),
 
       m('.Form-group', Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, this.editing ? t('form.save') : t('form.create'))),
@@ -159,13 +179,15 @@ export default class ProjectFormModal extends Modal {
       this.categoryIds.length > 1
         ? m('.ProjectForm-primary', [
             m('label', t('form.primary_label')),
-            m('select.FormControl', {
+            m(Select, {
               value: String(this.primaryCategoryId || ''),
-              onchange: (e: any) => (this.primaryCategoryId = Number(e.target.value) || null),
-            }, this.categoryIds.map((id) => {
-              const c = this.cfg.categories.find((x) => x.id === id);
-              return c ? m('option', { value: String(id) }, c.name) : null;
-            })),
+              options: this.categoryIds.reduce((o: Record<string, string>, id) => {
+                const c = this.cfg.categories.find((x) => x.id === id);
+                if (c) o[String(id)] = c.name;
+                return o;
+              }, {}),
+              onchange: (v: string) => (this.primaryCategoryId = Number(v) || null),
+            }),
           ])
         : null,
     ]);
@@ -197,10 +219,11 @@ export default class ProjectFormModal extends Modal {
         input = m('textarea.FormControl', { rows: 3, value: val, oninput: (e: any) => set(e.target.value) });
         break;
       case 'select':
-        input = m('select.FormControl', { value: val, onchange: (e: any) => set(e.target.value) }, [
-          m('option', { value: '' }, '—'),
-          ...f.options.map((o) => m('option', { value: o }, o)),
-        ]);
+        input = m(Select, {
+          value: val,
+          options: f.options.reduce((o: Record<string, string>, opt) => { o[opt] = opt; return o; }, { '': '—' }),
+          onchange: (v: string) => set(v),
+        });
         break;
       case 'boolean':
         return m('.Form-group.ProjectForm-field', [m(Switch, { state: val === '1', onchange: (v: boolean) => set(v ? '1' : '') }, [f.name]), help]);
@@ -340,6 +363,18 @@ export default class ProjectFormModal extends Modal {
     this.coAuthorResults = [];
   }
 
+  /** Accept either a pasted discussion link (…/d/123-slug) or a bare ID, and
+   *  return the numeric id (or null). Keeps the field friendly — people can
+   *  copy the URL from the address bar instead of hunting for the number. */
+  parseDiscussionId(input: string): number | null {
+    const s = (input || '').trim();
+    if (!s) return null;
+    const fromUrl = s.match(/\/d\/(\d+)/);
+    if (fromUrl) return Number(fromUrl[1]);
+    if (/^\d+$/.test(s)) return Number(s);
+    return null;
+  }
+
   toggleCategory(id: number) {
     const i = this.categoryIds.indexOf(id);
     if (i >= 0) {
@@ -362,7 +397,16 @@ export default class ProjectFormModal extends Modal {
     this.uploading = true;
     uploadImage(file)
       .then((url) => { this.image = url; this.uploading = false; m.redraw(); })
-      .catch((err) => { this.uploading = false; this.onerror(err); m.redraw(); });
+      .catch((err) => {
+        this.uploading = false;
+        // Client-side rejections (e.g. an oversize file) are plain Errors with
+        // no HTTP status — Modal.onerror only handles request errors, so those
+        // messages were being silently dropped (the "no popup" report). Show an
+        // alert for them; route real server errors through onerror as before.
+        if (err && err.status) this.onerror(err);
+        else app.alerts.show({ type: 'error', dismissible: true }, (err && err.message) || t('image_error'));
+        m.redraw();
+      });
   }
 
   submit() {
@@ -382,7 +426,7 @@ export default class ProjectFormModal extends Modal {
       fieldValues: this.fieldValues,
       links,
       coAuthors: this.coAuthorEntries,
-      discussionId: this.discussionId || null,
+      discussionId: this.parseDiscussionId(this.discussionId),
     };
 
     saveProject(attrs, this.editing?.id)

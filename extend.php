@@ -37,6 +37,7 @@ return [
         ->post('/projects', 'projects.create', Controller\CreateProjectController::class)
         ->post('/projects/upload-image', 'projects.upload', Controller\UploadImageController::class)
         ->get('/projects/config', 'projects.config', Controller\GetConfigController::class)
+        ->post('/projects/config/reorder', 'projects.config.reorder', Controller\ReorderDefinitionsController::class)
         ->post('/projects/config/categories', 'projects.categories.create', Controller\SaveCategoryController::class)
         ->patch('/projects/config/categories/{id}', 'projects.categories.update', Controller\SaveCategoryController::class)
         ->delete('/projects/config/categories/{id}', 'projects.categories.delete', Controller\DeleteCategoryController::class)

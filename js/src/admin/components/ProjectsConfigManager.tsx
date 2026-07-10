@@ -10,6 +10,7 @@ import {
   deleteCategory,
   deleteField,
   deleteButton,
+  reorderDefinitions,
   type ProjectsConfig,
   type CategoryDef,
   type FieldDef,
@@ -87,10 +88,14 @@ export default class ProjectsConfigManager extends Component {
     return m('.ProjectsConfig-section', [
       m('.ProjectsConfig-sectionHead', [m('h3', title), m('span.helpText', help)]),
       m('ul.ProjectsConfig-list', items.length
-        ? items.map((item) =>
+        ? items.map((item, index) =>
             m('li.ProjectsConfig-item', [
               m('span.ProjectsConfig-label', renderLabel(item)),
               m('.ProjectsConfig-itemActions', [
+                // Reorder controls — the saved order drives display everywhere
+                // (form, cards, project pages).
+                Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-arrow-up', disabled: index === 0, title: t('config.move_up'), onclick: () => this.move(key, index, -1) }),
+                Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-arrow-down', disabled: index === items.length - 1, title: t('config.move_down'), onclick: () => this.move(key, index, 1) }),
                 Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-pencil', onclick: () => this.edit(modalFor(item), item) }),
                 Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-trash', onclick: () => this.confirmDelete(remove, item.id) }),
               ]),
@@ -99,6 +104,20 @@ export default class ProjectsConfigManager extends Component {
         : m('li.ProjectsConfig-empty', t('config.none'))),
       Button.component({ className: 'Button Button--icon', icon: 'fas fa-plus', onclick: () => this.edit(modalFor(), undefined) }, t('config.add')),
     ]);
+  }
+
+  /** Move an item up/down within its section and persist the new order. The
+   *  local list updates immediately; a failure re-fetches the true order. */
+  move(kind: string, index: number, dir: number) {
+    const list = (this.config as any)[kind] as any[];
+    const j = index + dir;
+    if (j < 0 || j >= list.length) return;
+    const arr = list.slice();
+    const [item] = arr.splice(index, 1);
+    arr.splice(j, 0, item);
+    arr.forEach((x, i) => (x.position = i));
+    (this.config as any)[kind] = arr;
+    reorderDefinitions(kind as any, arr.map((x) => x.id)).catch(() => this.refresh());
   }
 
   edit(modal: any, item?: any) {

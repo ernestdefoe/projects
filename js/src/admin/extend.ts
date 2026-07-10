@@ -1,7 +1,7 @@
 import Extend from 'flarum/common/extenders';
 import app from 'flarum/admin/app';
 import ProjectsConfigManager from './components/ProjectsConfigManager';
-import { publishBadgeOptions } from './badgeOptions';
+import PublishBadgeSetting from './components/PublishBadgeSetting';
 
 declare const m: any;
 const t = (k: string) => app.translator.trans('ernestdefoe-projects.admin.' + k);
@@ -22,13 +22,9 @@ export default [
       help: t('settings.allow_adhoc_links_help'),
       default: false,
     }))
-    .setting(() => ({
-      setting: 'ernestdefoe-projects.publish_badge_id',
-      type: 'select',
-      options: publishBadgeOptions(),
-      label: t('settings.publish_badge_id'),
-      help: t('settings.publish_badge_id_help'),
-    }))
+    // Badge picker is a live component (see PublishBadgeSetting) — a declarative
+    // select can't refresh its options after the async badge fetch.
+    .customSetting(() => m(PublishBadgeSetting), 5)
     .setting(() => ({
       setting: 'ernestdefoe-projects.max_image_mb',
       type: 'number',

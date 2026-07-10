@@ -64,7 +64,7 @@ export default class ProjectCard extends Component {
               ? m('.ProjectCard-byline', people.map((person: any, i: number) => {
                   const name = person.displayName || person.name || person.username;
                   return [
-                    i > 0 ? m('span.ProjectCard-bylineSep', ', ') : null,
+                    i > 0 ? m('span.ProjectCard-bylineSep', '·') : null,
                     person.username
                       ? m('a.ProjectCard-author', {
                           href: app.route('user', { username: person.username }),
@@ -114,7 +114,7 @@ export default class ProjectCard extends Component {
         m('span.ProjectCard-field', { title: f.name }, [
           f.icon ? m('i', { className: f.icon }) : null,
           ' ',
-          m('span.ProjectCard-fieldName', f.name + ': '),
+          m('span.ProjectCard-fieldName', f.name + ':'),
           m('span.ProjectCard-fieldVal', this.formatField(f)),
         ])
       )

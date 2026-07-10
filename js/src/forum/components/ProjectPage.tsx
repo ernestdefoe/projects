@@ -95,7 +95,7 @@ export default class ProjectPage extends Page {
           const people = [...(p.author ? [p.author] : []), ...(p.coAuthors || [])];
           return people.length
             ? m('.ProjectPage-byline', people.map((person: any, i: number) => [
-                i > 0 ? m('span.ProjectPage-bylineSep', ', ') : null,
+                i > 0 ? m('span.ProjectPage-bylineSep', '·') : null,
                 person.username
                   ? m(Link, { href: app.route('user', { username: person.username }), className: 'ProjectPage-author' }, [authorAvatar(person), m('span', person.displayName || person.username)])
                   : m('span.ProjectPage-author.ProjectPage-author--text', person.name || person.displayName),
@@ -202,9 +202,15 @@ export default class ProjectPage extends Page {
 
   feature() {
     if (!this.project) return;
-    featureProject(this.project.id)
+    // Optimistic, like the like button — flipping on the round-trip made the
+    // star feel ~a second late. Reconcile with the server, roll back on error.
+    const p = this.project;
+    const was = p.isFeatured;
+    p.isFeatured = !was;
+    m.redraw();
+    featureProject(p.id)
       .then((res) => { this.project = res.data; m.redraw(); })
-      .catch(() => app.alerts.show({ type: 'error' }, t('like_error')));
+      .catch(() => { p.isFeatured = was; m.redraw(); app.alerts.show({ type: 'error' }, t('like_error')); });
   }
 
   moderate(action: 'approve' | 'reject') {

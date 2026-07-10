@@ -52,9 +52,14 @@ class ListProjectsController implements RequestHandlerInterface
             }
         }
 
-        // Author filter (used by the profile tab).
+        // Author filter (used by the profile tab): the member's own projects
+        // AND any project they're a linked co-author on, so co-authored work
+        // shows up on their profile too.
         if ($userId = (int) Arr::get($params, 'user', 0)) {
-            $query->where('user_id', $userId);
+            $query->where(function (Builder $sub) use ($userId) {
+                $sub->where('user_id', $userId)
+                    ->orWhereHas('coAuthors', fn (Builder $c) => $c->where('user_id', $userId));
+            });
         }
 
         // Status filter — only honoured for moderators.

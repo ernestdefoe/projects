@@ -230,6 +230,15 @@ function deleteDefinition(kind: string, id: number): Promise<void> {
   return app.request({ method: 'DELETE', url: `${base()}/config/${kind}/${id}` });
 }
 
+/** Persist a new display order for a definition kind (admin reorder). */
+export function reorderDefinitions(kind: 'categories' | 'fields' | 'buttons', ids: number[]): Promise<void> {
+  return app.request({
+    method: 'POST',
+    url: `${base()}/config/reorder`,
+    body: { data: { attributes: { kind, ids } } },
+  });
+}
+
 export const saveCategory = (a: Record<string, unknown>, id?: number) => saveDefinition<CategoryDef>('categories', a, id);
 export const deleteCategory = (id: number) => deleteDefinition('categories', id);
 export const saveField = (a: Record<string, unknown>, id?: number) => saveDefinition<FieldDef>('fields', a, id);

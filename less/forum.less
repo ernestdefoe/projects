@@ -209,9 +209,10 @@
     font-size: 13px;
     color: var(--muted-color);
     margin-bottom: 10px;
-
-    &:hover { color: var(--link-color); }
   }
+  // Only linked forum users are interactive — plain-text co-authors get no
+  // hover affordance (they aren't clickable). Scope the hover to the <a>.
+  a&-author:hover { color: var(--link-color); }
 
   &-avatar {
     width: 22px;
@@ -244,7 +245,8 @@
 
   &-field { display: inline-flex; align-items: baseline; }
   &-field i { margin-right: 4px; }
-  &-fieldName { color: var(--muted-color); }
+  // Small breathing gap between a parameter name and its value.
+  &-fieldName { color: var(--muted-color); margin-right: 5px; }
   &-fieldVal { color: var(--text-color); font-weight: 600; }
 
   // Typography only — the 3-line clamp lives on `.is-clamped` (toggled by
@@ -282,14 +284,16 @@
   &-linkBtn {
     font-size: 12px;
     padding: 4px 10px;
-    max-width: 150px;
+    max-width: 100%;
+    height: auto;
 
-    // Labels are always shown now (not icon-only). Truncate long ones with an
-    // ellipsis so the footer never blows out the card width.
+    // Long labels wrap onto multiple lines (rather than overflowing a fixed
+    // 150px box and colliding with the like button). The footer is flex-wrap,
+    // so a taller button just pushes the row, never overlaps.
     .Button-label {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.25;
     }
   }
 
@@ -430,12 +434,49 @@
     }
   }
 
-  .ProjectForm-req { color: var(--alert-error-color, #c53030); }
+  // Required marker: a fixed, always-visible red (the theme's
+  // --alert-error-color can resolve to a light tint that vanished on the
+  // modal background — the "white asterisk" report).
+  .ProjectForm-req { color: #e0344a; font-weight: 700; }
+
+  // Frame the embedded composer editor so it reads as a proper input box
+  // (the composer's own editor is borderless — it relies on composer chrome we
+  // don't have here). Works for both the plain-textarea and rich (tiptap)
+  // drivers, whichever a site has installed.
+  .ProjectForm-content .TextEditor {
+    border: 1px solid var(--control-bg);
+    border-radius: var(--border-radius, 4px);
+    background: var(--body-bg, #fff);
+
+    .TextEditor-editor {
+      min-height: 150px;
+      max-height: 340px;
+      overflow-y: auto;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      resize: none;
+    }
+
+    .TextEditor-controls {
+      padding: 2px 6px;
+      border-top: 1px solid var(--control-bg);
+    }
+
+    // We provide the form's own submit button — hide the editor's.
+    .item-submit { display: none; }
+  }
   // Parameter description sits between the label and its input.
   .ProjectForm-fieldHelp { margin: -2px 0 5px; font-size: 12px; color: var(--muted-color); }
-  .ProjectForm-sectionLabel { font-weight: 700; display: block; margin: 18px 0 6px; }
+  // The "Links" heading matches the other field-group labels (weight/colour);
+  // only the top margin is larger, to set the section apart.
+  .ProjectForm-sectionLabel { font-weight: 600; color: var(--text-color); display: block; margin: 18px 0 5px; }
+  .ProjectForm-link { margin-bottom: 12px; }
   .ProjectForm-linkRow { display: flex; gap: 8px; }
-  .ProjectForm-linkLabel { max-width: 180px; }
+  // url field takes the lead, custom-label field is secondary but wide enough
+  // that its placeholder no longer clips.
+  .ProjectForm-linkRow > .FormControl:first-child { flex: 1 1 auto; min-width: 0; }
+  .ProjectForm-linkLabel { flex: 0 1 200px; min-width: 0; }
 
   .ProjectForm-fields {
     display: grid;

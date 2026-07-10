@@ -5,11 +5,21 @@ import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import Select from 'flarum/common/components/Select';
 import extractText from 'flarum/common/utils/extractText';
 import ProjectCard from './ProjectCard';
+import ProjectPage from './ProjectPage';
 import ProjectFormModal from './ProjectFormModal';
 import { config, listProjects, likeProject, type ListParams, type Project } from '../../common/api';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.forum.' + k, p);
+
+// Remembers the browse state (loaded cards, filters, scroll position) so that
+// opening a project and clicking Back returns you exactly where you were,
+// instead of reloading the grid from the top. Restored only on a genuine
+// back-navigation from a project page (see oninit).
+let browseCache: {
+  category: string; q: string; sort: 'recent' | 'popular' | 'title'; status: string;
+  projects: Project[]; page: number; hasMore: boolean; total: number; scrollY: number;
+} | null = null;
 
 /**
  * The browse page: a search bar, category filter, sort control and an
@@ -30,12 +40,57 @@ export default class ProjectsPage extends Page {
   sort: 'recent' | 'popular' | 'title' = 'recent';
   status = '';
   private debounce: any = null;
+  private restoreScrollTo: number | null = null;
 
   oninit(vnode: any) {
     super.oninit(vnode);
     app.setTitle(t('page_title') as unknown as string);
     this.category = (m.route.param('category') as string) || '';
-    this.load();
+
+    // Restore the remembered grid only when returning from a project page for
+    // the same filter — a fresh visit (or a different tag) loads normally.
+    const cameFromProject = !!(app.previous && app.previous.matches && app.previous.matches(ProjectPage));
+    if (browseCache && cameFromProject && browseCache.category === this.category) {
+      this.q = browseCache.q;
+      this.sort = browseCache.sort;
+      this.status = browseCache.status;
+      this.projects = browseCache.projects;
+      this.page = browseCache.page;
+      this.hasMore = browseCache.hasMore;
+      this.total = browseCache.total;
+      this.loading = false;
+      this.restoreScrollTo = browseCache.scrollY;
+    } else {
+      browseCache = null;
+      this.load();
+    }
+  }
+
+  oncreate(vnode: any) {
+    super.oncreate(vnode);
+    this.tryRestoreScroll();
+  }
+
+  onupdate(vnode: any) {
+    super.onupdate(vnode);
+    this.tryRestoreScroll();
+  }
+
+  /** Once the restored cards are in the DOM, jump back to the saved offset. */
+  tryRestoreScroll() {
+    if (this.restoreScrollTo == null || this.loading || !this.projects.length) return;
+    const y = this.restoreScrollTo;
+    this.restoreScrollTo = null;
+    requestAnimationFrame(() => window.scrollTo(0, y));
+  }
+
+  onremove() {
+    // Snapshot the current browse state so a later Back can restore it.
+    browseCache = {
+      category: this.category, q: this.q, sort: this.sort, status: this.status,
+      projects: this.projects, page: this.page, hasMore: this.hasMore, total: this.total,
+      scrollY: window.pageYOffset,
+    };
   }
 
   params(): ListParams {
