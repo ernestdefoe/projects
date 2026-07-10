@@ -2,7 +2,7 @@ import app from 'flarum/forum/app';
 import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
 import Switch from 'flarum/common/components/Switch';
-import Select from 'flarum/common/components/Select';
+import StyledSelect from './StyledSelect';
 import TextEditor from 'flarum/common/components/TextEditor';
 import extractText from 'flarum/common/utils/extractText';
 import { config, getProject, saveProject, uploadImage, type ButtonDef, type FieldDef, type Project } from '../../common/api';
@@ -179,7 +179,7 @@ export default class ProjectFormModal extends Modal {
       this.categoryIds.length > 1
         ? m('.ProjectForm-primary', [
             m('label', t('form.primary_label')),
-            m(Select, {
+            m(StyledSelect, {
               value: String(this.primaryCategoryId || ''),
               options: this.categoryIds.reduce((o: Record<string, string>, id) => {
                 const c = this.cfg.categories.find((x) => x.id === id);
@@ -219,7 +219,7 @@ export default class ProjectFormModal extends Modal {
         input = m('textarea.FormControl', { rows: 3, value: val, oninput: (e: any) => set(e.target.value) });
         break;
       case 'select':
-        input = m(Select, {
+        input = m(StyledSelect, {
           value: val,
           options: f.options.reduce((o: Record<string, string>, opt) => { o[opt] = opt; return o; }, { '': '—' }),
           onchange: (v: string) => set(v),

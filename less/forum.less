@@ -449,29 +449,67 @@
     background: var(--body-bg, #fff);
 
     .TextEditor-editor {
-      min-height: 150px;
-      max-height: 340px;
+      min-height: 165px;
+      max-height: 360px;
       overflow-y: auto;
+      // Breathing room so the text/placeholder isn't jammed against the edges.
+      padding: 11px 13px;
       border: 0;
       border-radius: 0;
       box-shadow: none;
       resize: none;
     }
 
+    // Toolbar wraps instead of overflowing when the modal is narrow.
     .TextEditor-controls {
-      padding: 2px 6px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 2px;
+      padding: 5px 8px;
       border-top: 1px solid var(--control-bg);
     }
 
     // We provide the form's own submit button — hide the editor's.
     .item-submit { display: none; }
   }
+
+  // Flarum-styled dropdown (StyledSelect) — a real Dropdown menu instead of a
+  // native <select> whose popup can't be themed.
+  .ProjectSelect {
+    display: block;
+
+    .ProjectSelect-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      text-align: left;
+      font-weight: normal;
+
+      .Button-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .Button-caret { margin-left: auto; opacity: 0.7; }
+    }
+
+    .ProjectSelect-menu {
+      min-width: 100%;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .ProjectSelect-option { text-align: left; }
+  }
   // Parameter description sits between the label and its input.
   .ProjectForm-fieldHelp { margin: -2px 0 5px; font-size: 12px; color: var(--muted-color); }
   // The "Links" heading matches the other field-group labels (weight/colour);
   // only the top margin is larger, to set the section apart.
-  .ProjectForm-sectionLabel { font-weight: 600; color: var(--text-color); display: block; margin: 18px 0 5px; }
-  .ProjectForm-link { margin-bottom: 12px; }
+  .ProjectForm-sectionLabel { font-weight: 600; color: var(--text-color); display: block; margin: 20px 0 10px; }
+  // Each link row (label + url/label inputs + domain hint) gets clear separation
+  // so the next link's label isn't crowded against the row above it.
+  .ProjectForm-link { margin-bottom: 20px; }
+  .ProjectForm-link > label { margin-bottom: 6px; }
+  .ProjectForm-link .helpText { margin-top: 5px; }
   .ProjectForm-linkRow { display: flex; gap: 8px; }
   // url field takes the lead, custom-label field is secondary but wide enough
   // that its placeholder no longer clips.
@@ -569,9 +607,16 @@
 .ProjectPage-byline {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 4px;
+  // baseline (not center): the separator centres on its own em box and ended up
+  // ~5px below the names, which are taller; aligning to the text baseline lines
+  // the middot up with the names while avatars stay aligned too.
+  align-items: baseline;
+  gap: 2px 6px;
 }
+// The avatar inside a byline author still needs to sit with the name, not on
+// the text baseline — nudge it back to optical centre.
+.ProjectCard-byline .ProjectCard-avatar,
+.ProjectPage-byline .ProjectCard-avatar { align-self: center; }
 .ProjectCard-byline { margin: 0 0 6px; }
 .ProjectPage-byline { margin: 2px 0 10px; }
 .ProjectCard-bylineSep,
