@@ -2,9 +2,9 @@ import app from 'flarum/forum/app';
 import Page from 'flarum/common/components/Page';
 import Button from 'flarum/common/components/Button';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
-import Select from 'flarum/common/components/Select';
 import extractText from 'flarum/common/utils/extractText';
 import ProjectCard from './ProjectCard';
+import StyledSelect from './StyledSelect';
 import ProjectPage from './ProjectPage';
 import ProjectFormModal from './ProjectFormModal';
 import { config, listProjects, likeProject, type ListParams, type Project } from '../../common/api';
@@ -223,25 +223,23 @@ export default class ProjectsPage extends Page {
           }),
         ]),
 
-        // Core's Select component instead of raw native selects: themes style
-        // .Select consistently, while bare FormControl selects inherited
-        // whatever height/line-height the theme set and clipped their labels
-        // (the "filter labels aren't displaying properly" report). The
-        // category filter is a pill row below instead of a dropdown.
-        m(Select, {
-          wrapperAttrs: { className: 'ProjectsPage-filter' },
+        // StyledSelect renders a real Flarum Dropdown (ul.Dropdown-menu.dropdown-menu)
+        // rather than a native <select> whose option popup can't be themed — the
+        // same styled menu the discussion list uses for its latest/top/newest
+        // filter, as requested in the thread. The category filter is the pill row
+        // below instead of a dropdown.
+        m('.ProjectsPage-filter', m(StyledSelect, {
           value: this.sort,
           options: {
             recent: extractText(t('sort.recent')),
             popular: extractText(t('sort.popular')),
             title: extractText(t('sort.title')),
           },
-          onchange: (v: string) => { this.sort = v; this.load(); },
-        }),
+          onchange: (v: string) => { this.sort = v as typeof this.sort; this.load(); },
+        })),
 
         canModerate
-          ? m(Select, {
-              wrapperAttrs: { className: 'ProjectsPage-filter' },
+          ? m('.ProjectsPage-filter', m(StyledSelect, {
               value: this.status,
               options: {
                 '': extractText(t('status.all')),
@@ -250,7 +248,7 @@ export default class ProjectsPage extends Page {
                 rejected: extractText(t('status.rejected')),
               },
               onchange: (v: string) => { this.status = v; this.load(); },
-            })
+            }))
           : null,
       ]),
 

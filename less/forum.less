@@ -463,53 +463,67 @@
 
     .TextEditor-editor {
       min-height: 165px;
-      max-height: 360px;
+      // A drag handle at the bottom of the field, like the Short-description
+      // textarea — this is a large free-text field, so let people grow it.
+      // (Markdown driver is a textarea, so the native handle appears; the rich
+      // driver grows with its content anyway.)
+      resize: vertical;
+      max-height: none;
       overflow-y: auto;
       // Breathing room so the text/placeholder isn't jammed against the edges.
       padding: 11px 13px;
       border: 0;
       border-radius: 0;
       box-shadow: none;
-      resize: none;
     }
 
+    // The toolbar is ONE row that scrolls horizontally when the buttons overflow
+    // (narrow modal / lots of tools from other extensions) — exactly like the
+    // composer's own toolbar, instead of wrapping onto extra lines.
     .TextEditor-controls {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
       gap: 6px 4px;
       margin: 0;
       padding: 6px 12px;
       border-top: 1px solid var(--control-bg);
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
     }
     // Core bleeds the toolbar out with negative margins to edge-align it in the
     // composer; there's no padding to absorb that here, so it stuck out left.
     .TextEditor-toolbar,
     .TextEditor-toolbar .MarkdownToolbar { margin: 0; }
 
-    // The FoF upload buttons render OUTSIDE the editor (to the left) when
-    // TextEditor is used in a modal rather than the composer — they were the
-    // "icons busting out". Hide them here; drag-and-drop upload still works and
-    // the image-embed button remains in the toolbar.
-    .item-fof-upload,
-    .item-fof-upload-media { display: none; }
+    // Every control-bar item (the formatting toolbar AND fof/upload's buttons,
+    // which are added via controlItems) sits inline at natural size — no
+    // margin-right:auto stretch (that's what stranded the upload icons before),
+    // no shrinking. The whole bar scrolls horizontally instead.
+    .TextEditor-controls > .item { flex: 0 0 auto; margin: 0; }
 
-    // Spread the toolbar buttons across the width with a comfortable gap at each
-    // nesting level (the buttons otherwise touch and cluster on the left).
-    // Plain flex + gap only — space-between / display:contents both overflowed
-    // the row to the left here, so we avoid them.
+    // Single-row toolbar: don't wrap, and don't let the buttons squish — they
+    // keep their size and the row scrolls instead.
     .TextEditor-toolbar {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
-      gap: 8px 12px;
+      gap: 6px;
 
       .MarkdownToolbar {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         align-items: center;
-        gap: 8px 12px;
+        gap: 6px;
       }
+
+      // Every tool (and any tool contributed by another extension, e.g. an
+      // upload button) holds its width so nothing collapses in the scroll row.
+      .item,
+      > .Button,
+      .MarkdownToolbar .Button { flex: 0 0 auto; }
     }
 
     // We provide the form's own submit button — hide the editor's.
@@ -570,6 +584,15 @@
 
   .ProjectForm-buttons { margin-bottom: 18px; }
   .ProjectForm-buttons .ProjectForm-link label { display: block; margin-bottom: 5px; font-weight: 600; }
+  // A subtle 1px border groups the link rows into one distinct block; the
+  // "Links" heading stays outside it (it's a sibling above .ProjectForm-linksBox).
+  .ProjectForm-linksBox {
+    border: 1px solid var(--control-bg);
+    border-radius: var(--border-radius, 4px);
+    padding: 14px 14px 0;
+  }
+  // Last row's bottom margin would otherwise double up with the box padding.
+  .ProjectForm-linksBox .ProjectForm-link:last-child { margin-bottom: 14px; }
 }
 
 /* Co-authors */
@@ -649,20 +672,16 @@
 .ProjectPage-byline {
   display: flex;
   flex-wrap: wrap;
-  // baseline (not center): the separator centres on its own em box and ended up
-  // ~5px below the names, which are taller; aligning to the text baseline lines
-  // the middot up with the names while avatars stay aligned too.
-  align-items: baseline;
-  gap: 2px 6px;
+  align-items: center;
+  // No separators between names — a comfortable horizontal gap alone divides
+  // them (the old middot misaligned against the avatar-bearing names).
+  gap: 4px 14px;
 }
-// The avatar inside a byline author still needs to sit with the name, not on
-// the text baseline — nudge it back to optical centre.
+// The avatar inside a byline author sits with its name.
 .ProjectCard-byline .ProjectCard-avatar,
 .ProjectPage-byline .ProjectCard-avatar { align-self: center; }
 .ProjectCard-byline { margin: 0 0 6px; }
 .ProjectPage-byline { margin: 2px 0 10px; }
-.ProjectCard-bylineSep,
-.ProjectPage-bylineSep,
 .ProjectCard-author--text,
 .ProjectPage-author--text { color: var(--muted-color); }
 

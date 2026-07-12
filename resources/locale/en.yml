@@ -83,7 +83,7 @@ ernestdefoe-projects:
       excerpt_label: "Short description"
       excerpt_help: "{count} characters left."
       content_label: "Details"
-      content_placeholder: "Describe your project — formatting works just like a forum post."
+      content_placeholder: "Describe your project…"
       categories_label: "Tags"
       categories_hint: "Choose {min}–{max} tags."
       categories_max: "You can choose at most {max} tags."

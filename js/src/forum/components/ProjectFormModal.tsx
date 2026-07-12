@@ -246,9 +246,11 @@ export default class ProjectFormModal extends Modal {
   buttonsSection() {
     const buttons = this.cfg.buttons.filter((b) => this.appliesToSelected(b.categoryIds));
     if (!buttons.length) return null;
+    // Heading sits OUTSIDE the bordered box; the box groups the link rows so the
+    // section reads as one distinct block (thread request).
     return m('.ProjectForm-buttons', [
       m('label.ProjectForm-sectionLabel', t('form.links_label')),
-      ...buttons.map((b) => this.buttonInput(b)),
+      m('.ProjectForm-linksBox', buttons.map((b) => this.buttonInput(b))),
     ]);
   }
 

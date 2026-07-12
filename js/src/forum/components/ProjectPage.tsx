@@ -94,12 +94,13 @@ export default class ProjectPage extends Page {
         (() => {
           const people = [...(p.author ? [p.author] : []), ...(p.coAuthors || [])];
           return people.length
-            ? m('.ProjectPage-byline', people.map((person: any, i: number) => [
-                i > 0 ? m('span.ProjectPage-bylineSep', '·') : null,
+            // No separators between names — spacing alone divides them (the
+            // middot misaligned against the taller avatar names). See thread.
+            ? m('.ProjectPage-byline', people.map((person: any) =>
                 person.username
                   ? m(Link, { href: app.route('user', { username: person.username }), className: 'ProjectPage-author' }, [authorAvatar(person), m('span', person.displayName || person.username)])
-                  : m('span.ProjectPage-author.ProjectPage-author--text', person.name || person.displayName),
-              ]))
+                  : m('span.ProjectPage-author.ProjectPage-author--text', person.name || person.displayName)
+              ))
             : null;
         })(),
 

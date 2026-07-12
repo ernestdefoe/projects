@@ -61,17 +61,16 @@ export default class ProjectCard extends Component {
           (() => {
             const people = [...(p.author ? [p.author] : []), ...(p.coAuthors || [])];
             return people.length
-              ? m('.ProjectCard-byline', people.map((person: any, i: number) => {
+              // No separators between names — spacing alone divides them (the
+              // middot misaligned against the taller avatar names). See thread.
+              ? m('.ProjectCard-byline', people.map((person: any) => {
                   const name = person.displayName || person.name || person.username;
-                  return [
-                    i > 0 ? m('span.ProjectCard-bylineSep', '·') : null,
-                    person.username
-                      ? m('a.ProjectCard-author', {
-                          href: app.route('user', { username: person.username }),
-                          onclick: (e: Event) => e.stopPropagation(),
-                        }, [authorAvatar(person), m('span', name)])
-                      : m('span.ProjectCard-author.ProjectCard-author--text', name),
-                  ];
+                  return person.username
+                    ? m('a.ProjectCard-author', {
+                        href: app.route('user', { username: person.username }),
+                        onclick: (e: Event) => e.stopPropagation(),
+                      }, [authorAvatar(person), m('span', name)])
+                    : m('span.ProjectCard-author.ProjectCard-author--text', name);
                 }))
               : null;
           })(),
