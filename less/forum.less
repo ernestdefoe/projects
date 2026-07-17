@@ -73,13 +73,21 @@
     }
   }
 
-  // The class now sits on core's .Select wrapper span (the native select
-  // lives inside it and gets core's cross-theme styling + caret).
+  // Each filter is a StyledSelect = Flarum's Dropdown; the toggle is a
+  // .ProjectSelect-toggle button holding the label + a chevron caret.
   &-filter {
     flex: 0 0 auto;
 
-    .Select-input {
-      // Don't let the select collapse narrower than its label.
+    .ProjectSelect-toggle {
+      // Keep the label and the chevron caret on ONE line — they were wrapping
+      // the arrow onto a second row when the button was tight on width. Lay
+      // them out as an inline row (label left, caret right) that never wraps.
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      white-space: nowrap;
+      // Don't let the button collapse narrower than its label.
       min-width: 140px;
       width: 100%;
     }
