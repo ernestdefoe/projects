@@ -781,7 +781,11 @@
 
   &:hover { opacity: 0.9; }
 
-  i { color: inherit; }
+  // Explicit colour (NOT `inherit`): the badge is an <a>, and a theme link rule
+  // like `.PostUser a { color: var(--link-color) }` outranks our anchor colour
+  // at rest, so an inheriting icon picked up the link colour until hover. An
+  // explicit value on the element beats any inherited one, so it stays white.
+  i { color: #fff; }
 
   .ProjectFeaturedBadge-name {
     color: #fff;
