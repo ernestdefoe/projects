@@ -75,6 +75,10 @@ export default class ProjectCard extends Component {
               : null;
           })(),
 
+          p.madeWithAi
+            ? m('span.ProjectCard-aiTag', { title: t('ai_disclaimer') }, [m('i.fas.fa-robot'), ' ', t('ai_badge')])
+            : null,
+
           this.cardFields(p),
 
           p.excerpt ? this.excerptBlock(p) : null,

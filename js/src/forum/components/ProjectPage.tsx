@@ -106,6 +106,10 @@ export default class ProjectPage extends Page {
 
         p.excerpt ? m('p.ProjectPage-excerpt', p.excerpt) : null,
 
+        p.madeWithAi
+          ? m('.ProjectPage-aiNotice', [m('i.fas.fa-robot'), m('span', t('ai_disclaimer'))])
+          : null,
+
         this.fields(p),
 
         p.contentHtml ? m('.ProjectPage-content.Post-body', m.trust(p.contentHtml)) : null,

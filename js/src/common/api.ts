@@ -108,6 +108,8 @@ export interface Project {
   canModerate: boolean;
   isFeatured: boolean;
   canFeature: boolean;
+  /** Author declared the project was created with the help of AI tools. */
+  madeWithAi: boolean;
   contentHtml?: string;
   content?: string | null;
 }

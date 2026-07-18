@@ -32,6 +32,7 @@ export default class ProjectFormModal extends Modal {
   newCoAuthor = '';
   coAuthorResults: any[] = [];
   discussionId = '';
+  madeWithAi = false;
 
   // A stable holder that Flarum's TextEditor attaches its editor driver to
   // (composer.editor) and its toolbar buttons read back from. We don't run a
@@ -64,6 +65,7 @@ export default class ProjectFormModal extends Modal {
     this.categoryIds = p.categories.map((c) => c.id);
     this.primaryCategoryId = p.primaryCategory?.id || null;
     this.discussionId = p.discussionId ? String(p.discussionId) : '';
+    this.madeWithAi = !!p.madeWithAi;
     this.coAuthorEntries = (p.coAuthors || []).map((a) => a.username || a.name || '').filter(Boolean);
     p.fields.forEach((f) => (this.fieldValues[f.id] = f.value));
     p.links.forEach((l) => {
@@ -150,6 +152,12 @@ export default class ProjectFormModal extends Modal {
           oninput: (e: any) => (this.discussionId = e.target.value),
         }),
         m('span.helpText', t('form.discussion_help')),
+      ]),
+
+      // AI self-declaration — when on, a disclaimer is shown on the card + page.
+      m('.Form-group.ProjectForm-ai', [
+        m(Switch, { state: this.madeWithAi, onchange: (v: boolean) => (this.madeWithAi = v) }, [t('form.ai_label')]),
+        m('span.helpText', t('form.ai_help')),
       ]),
 
       m('.Form-group', Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, this.editing ? t('form.save') : t('form.create'))),
@@ -429,6 +437,7 @@ export default class ProjectFormModal extends Modal {
       links,
       coAuthors: this.coAuthorEntries,
       discussionId: this.parseDiscussionId(this.discussionId),
+      madeWithAi: this.madeWithAi,
     };
 
     saveProject(attrs, this.editing?.id)

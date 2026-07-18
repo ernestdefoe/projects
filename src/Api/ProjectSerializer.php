@@ -61,6 +61,7 @@ class ProjectSerializer
                 && ($actor->isAdmin() || $actor->hasPermission('projects.moderate')),
             'isFeatured'      => (bool) $project->is_featured,
             'canFeature'      => self::canFeature($project, $actor),
+            'madeWithAi'      => (bool) $project->made_with_ai,
         ];
 
         if ($full) {

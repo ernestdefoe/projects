@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $image_path
  * @property string $status
  * @property string|null $rejection_reason
+ * @property bool $made_with_ai
  * @property int $likes_count
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
@@ -38,15 +39,17 @@ class Project extends AbstractModel
     protected $table = 'projects';
 
     protected $casts = [
-        'likes_count' => 'integer',
-        'is_featured' => 'boolean',
-        'created_at'  => 'datetime',
-        'updated_at'  => 'datetime',
+        'likes_count'  => 'integer',
+        'is_featured'  => 'boolean',
+        'made_with_ai' => 'boolean',
+        'created_at'   => 'datetime',
+        'updated_at'   => 'datetime',
     ];
 
     protected $attributes = [
-        'status'      => self::STATUS_PENDING,
-        'likes_count' => 0,
+        'status'       => self::STATUS_PENDING,
+        'likes_count'  => 0,
+        'made_with_ai' => false,
     ];
 
     /**

@@ -719,24 +719,74 @@
   margin: 0 0 14px;
 }
 
-/* Featured-project badge — sits beside FoF Badges' .PrimaryBadge next to the
-   username, tinted with the project's category accent. Reuses .PrimaryBadge for
-   layout so it matches whether or not fof/badges styles are present. */
-.PrimaryBadge.ProjectFeaturedBadge {
+/* "Made with AI" self-declaration — a subtle chip on the card and a fuller
+   disclaimer notice on the detail page. Neutral/muted styling so it informs
+   without competing with the project's own accent. */
+.ProjectCard-aiTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0 6px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-color);
+  background: var(--control-bg);
+
+  i { font-size: 10px; }
+}
+
+.ProjectPage-aiNotice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 9px 13px;
+  border-radius: 6px;
+  border: 1px solid var(--control-bg);
+  background: var(--control-bg);
+  color: var(--muted-color);
+  font-size: 13px;
+  line-height: 1.4;
+
+  i { flex: 0 0 auto; opacity: 0.8; }
+}
+
+/* Featured-project badge — sits beside FoF Badges' primary badge next to the
+   username, tinted with the project's category accent. Uses its OWN standalone
+   class (deliberately NOT `.PrimaryBadge`) so fof/badges' badge styling can't
+   leak in and clash; every rule it needs is declared here. */
+.ProjectFeaturedBadge {
   --project-accent: var(--primary-color);
   display: inline-flex;
   align-items: center;
+  vertical-align: middle;
   gap: 5px;
   margin-left: 6px;
   padding: 1px 8px;
+  border: 0;
   border-radius: 10px;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.6;
+  white-space: nowrap;
+  text-decoration: none;
   color: #fff;
   background: var(--project-accent);
 
-  &:hover { color: #fff; opacity: 0.9; }
+  &,
+  &:hover,
+  &:focus { color: #fff; text-decoration: none; }
 
-  .PrimaryBadge-name { color: #fff; }
+  &:hover { opacity: 0.9; }
+
+  i { color: inherit; }
+
+  .ProjectFeaturedBadge-name {
+    color: #fff;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }

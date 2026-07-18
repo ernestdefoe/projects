@@ -40,10 +40,11 @@ app.initializers.add('ernestdefoe/projects', () => {
     );
   });
 
-  // Featured-project badge next to the username, beside FoF Badges' primary
-  // badge (.PrimaryBadge) rather than among the group badges. Reads the
-  // denormalised `projectFeatured` snapshot (no per-render query) and links to
-  // the project. Mirrors how fof/badges injects its PrimaryBadge into PostUser.
+  // Featured-project badge next to the username. It sits beside FoF Badges'
+  // primary badge but uses its OWN standalone class (NOT `.PrimaryBadge`) so
+  // fof/badges' circular-badge styling can't bleed in and clash — the two
+  // badges are visually independent. Reads the denormalised `projectFeatured`
+  // snapshot (no per-render query) and links to the project.
   extend(PostUser.prototype, 'view', function (this: any, vnode: any) {
     const post = this.attrs.post;
     const user = post && typeof post.user === 'function' ? post.user() : null;
@@ -56,12 +57,12 @@ app.initializers.add('ernestdefoe/projects', () => {
         Link,
         {
           href: app.route('projects.show', { slug: featured.slug }),
-          className: 'PrimaryBadge ProjectFeaturedBadge',
+          className: 'ProjectFeaturedBadge',
           title: featured.title,
           style: featured.color ? { '--project-accent': featured.color } : undefined,
           onclick: (e: Event) => e.stopPropagation(),
         },
-        [m('i', { className: featured.icon || 'fas fa-cube' }), m('span.PrimaryBadge-name', featured.title)]
+        [m('i', { className: featured.icon || 'fas fa-cube' }), m('span.ProjectFeaturedBadge-name', featured.title)]
       )
     );
   });

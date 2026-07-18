@@ -81,6 +81,12 @@ class ProjectInput
             $project->discussion_id = ($did === null || $did === '') ? null : (int) $did;
         }
 
+        // Author's self-declaration that the project was made with AI tools;
+        // drives the disclaimer shown on the card and detail page.
+        if (array_key_exists('madeWithAi', $attrs)) {
+            $project->made_with_ai = filter_var($attrs['madeWithAi'], FILTER_VALIDATE_BOOLEAN);
+        }
+
         if ($errors) {
             throw new ValidationException($errors);
         }
