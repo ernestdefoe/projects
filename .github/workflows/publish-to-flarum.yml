@@ -111,6 +111,7 @@ jobs:
 
       - name: Post reply to support discussion
         env:
+          GH_TOKEN: ${{ github.token }}
           FLARUM_FORUM_URL: ${{ vars.FLARUM_FORUM_URL }}
           FLARUM_DISCUSSION_ID: ${{ vars.FLARUM_DISCUSSION_ID }}
           FLARUM_API_KEY: ${{ secrets.FLARUM_API_KEY }}
@@ -129,8 +130,21 @@ jobs:
             exit 0
           fi
 
-          CONTENT=$(printf '## %s %s\n\n%s\n\n[View release on GitHub](%s)\n' \
+          CONTENT_MD=$(printf '## %s %s\n\n%s\n\n[View release on GitHub](%s)\n' \
             "$REPO_NAME" "$RELEASE_TAG" "${POST_BODY:-_No release notes provided._}" "$RELEASE_URL")
+
+          # 🚨 Render to HTML before posting. Release notes are Markdown, and the
+          # support site has no Markdown extension — Scribe replaced it — so
+          # posting the raw source published literal "##" and "**bold**" as the
+          # announcement body. GitHub's own /markdown endpoint is used because it
+          # is already authenticated here, needs nothing installed, and renders
+          # the same GFM the release page shows.
+          #
+          # Falls back to the Markdown source if the render fails: a slightly
+          # ugly announcement beats no announcement.
+          CONTENT=$(jq -n --arg text "$CONTENT_MD" '{text:$text, mode:"gfm"}' \
+            | gh api --method POST /markdown --input - 2>/dev/null) || CONTENT="$CONTENT_MD"
+          [ -n "$CONTENT" ] || CONTENT="$CONTENT_MD"
 
           PAYLOAD=$(jq -n \
             --arg content "$CONTENT" \
