@@ -15,9 +15,14 @@ name: Draft release from commits
 # "2.1.24" the next draft is "2.1.25"; if it was "v2.1.24" the next
 # draft is "v2.1.25".
 
+# 🚨 No hardcoded branch name here.
+#
+# `branches: [main]` looked right and was silently dead on every repository
+# whose default branch is master or 2.x — the workflow sat in the repo and
+# never once ran. The job guards on the repository's OWN default branch
+# instead, so this file is correct wherever it is copied.
 on:
   push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -29,6 +34,8 @@ concurrency:
 
 jobs:
   draft:
+    # Only the default branch drafts a release, whatever that branch is called.
+    if: github.event_name == 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     steps:
       - name: Build draft from commit history
