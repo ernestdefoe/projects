@@ -1,7 +1,7 @@
 import app from 'flarum/forum/app';
 import Page from 'flarum/common/components/Page';
 import Button from 'flarum/common/components/Button';
-import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
+import ProjectsSkeleton, { rememberCount } from './ProjectsSkeleton';
 import extractText from 'flarum/common/utils/extractText';
 import ProjectCard from './ProjectCard';
 import StyledSelect from './StyledSelect';
@@ -262,7 +262,7 @@ export default class ProjectsPage extends Page {
         : null,
 
       this.loading
-        ? m('.ProjectsPage-loading', m(LoadingIndicator, { size: 'large' }))
+        ? m(ProjectsSkeleton)
         : this.error
           ? m('.ProjectsPage-empty.ProjectsPage-error', [
               m('i.fas.fa-circle-exclamation'),
@@ -271,7 +271,18 @@ export default class ProjectsPage extends Page {
             ])
           : this.projects.length
             ? [
-                m('.ProjectsGrid', this.projects.map((p) => m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x) }))),
+                m(
+                  '.ProjectsGrid',
+                  {
+                    /* 🚨 Measured on the element's own lifecycle, not after the
+                       fetch: a requestAnimationFrame there races Mithril's
+                       redraw and can run before the grid exists. */
+                    oncreate: () => rememberCount(this.projects.length),
+                    onupdate: () => rememberCount(this.projects.length),
+                  },
+                  this.projects.map((p) => m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x) })
+                  )
+                ),
                 this.hasMore
                   ? m('.ProjectsPage-more', Button.component({ className: 'Button', loading: this.loadingMore, onclick: () => this.loadMore() }, t('load_more')))
                   : null,

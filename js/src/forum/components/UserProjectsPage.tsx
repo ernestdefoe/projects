@@ -1,6 +1,6 @@
 import app from 'flarum/forum/app';
 import UserPage from 'flarum/forum/components/UserPage';
-import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
+import ProjectsSkeleton from './ProjectsSkeleton';
 import ProjectCard from './ProjectCard';
 import { listProjects, likeProject, featureProject, type Project } from '../../common/api';
 
@@ -59,7 +59,7 @@ export default class UserProjectsPage extends UserPage {
 
   content() {
     if (this.loadingProjects) {
-      return m('.UserProjectsPage', m(LoadingIndicator, { size: 'large' }));
+      return m('.UserProjectsPage', m(ProjectsSkeleton));
     }
 
     if (!this.projects.length) {

@@ -1,7 +1,7 @@
 import app from 'flarum/forum/app';
 import Page from 'flarum/common/components/Page';
 import Button from 'flarum/common/components/Button';
-import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
+import { ProjectSkeleton } from './ProjectsSkeleton';
 import Link from 'flarum/common/components/Link';
 import ProjectFormModal from './ProjectFormModal';
 import { getProject, likeProject, featureProject, deleteProject, moderateProject, type Project } from '../../common/api';
@@ -55,7 +55,7 @@ export default class ProjectPage extends Page {
   }
 
   view() {
-    if (this.loading) return m('.ProjectPage', m('.container', m(LoadingIndicator, { size: 'large' })));
+    if (this.loading) return m('.ProjectPage', m('.container', m(ProjectSkeleton)));
     if (this.error) {
       return m('.ProjectPage', m('.container', m('.ProjectPage-empty.ProjectsPage-error', [
         m('i.fas.fa-circle-exclamation'),

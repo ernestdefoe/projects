@@ -794,3 +794,92 @@
     text-overflow: ellipsis;
   }
 }
+
+/* ── loading skeleton ──────────────────────────────────────────────────────
+ *
+ * 🚨 Colours come from the theme's own tokens. A literal grey is invisible on
+ * half the forums this ships to.
+ */
+.ProjectsSkeleton {
+  /* Matches .ProjectsGrid exactly, or swapping one for the other moves the page. */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.ProjectsSkeleton-card {
+  /* .ProjectCard — 537px tall, measured. */
+  display: flex;
+  flex-direction: column;
+  height: 537px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--control-bg);
+}
+
+.ProjectsSkeleton-media {
+  /* The card is 537 tall and its body 270, so the media is the remainder. */
+  height: 267px;
+}
+
+.ProjectsSkeleton-body {
+  /* .ProjectCard-body */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 10px;
+}
+
+.ProjectsSkeleton-media,
+.ProjectsSkeleton-bar {
+  display: block;
+  border-radius: 4px;
+  background: var(--control-bg);
+  background-image: linear-gradient(
+    90deg,
+    var(--control-bg) 0%,
+    var(--body-bg) 40%,
+    var(--control-bg) 80%
+  );
+  background-size: 300% 100%;
+  animation: ProjectsSkeletonSheen 1.4s ease-in-out infinite;
+}
+
+.ProjectsSkeleton-media { border-radius: 0; }
+
+.ProjectsSkeleton-bar--title { height: 23px; width: 70%; }
+.ProjectsSkeleton-bar--line  { height: 18px; }
+.ProjectsSkeleton-bar--short { height: 18px; width: 55%; }
+.ProjectsSkeleton-bar--foot  { height: 30px; width: 45%; margin-top: auto; }
+
+/* The single-project view is one column, not a grid. */
+.ProjectsSkeleton--detail {
+  display: block;
+  max-width: 860px;
+}
+
+.ProjectsSkeleton--detail .ProjectsSkeleton-bar,
+.ProjectsSkeleton--detail .ProjectsSkeleton-media { margin-bottom: 14px; }
+
+.ProjectsSkeleton-media--wide { height: 300px; border-radius: 10px; }
+.ProjectsSkeleton-bar--heading { height: 36px; width: 60%; }
+.ProjectsSkeleton-bar--meta    { height: 22px; width: 40%; margin-bottom: 24px !important; }
+
+.ProjectsSkeleton-para {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.ProjectsSkeleton-para .ProjectsSkeleton-bar { margin-bottom: 0; }
+
+@keyframes ProjectsSkeletonSheen {
+  from { background-position: 150% 0; }
+  to   { background-position: -50% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ProjectsSkeleton-bar,
+  .ProjectsSkeleton-media { animation: none; }
+}
