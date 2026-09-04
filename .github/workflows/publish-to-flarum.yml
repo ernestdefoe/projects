@@ -142,9 +142,34 @@ jobs:
           #
           # Falls back to the Markdown source if the render fails: a slightly
           # ugly announcement beats no announcement.
-          CONTENT=$(jq -n --arg text "$CONTENT_MD" '{text:$text, mode:"gfm"}' \
-            | gh api --method POST /markdown --input - 2>/dev/null) || CONTENT="$CONTENT_MD"
-          [ -n "$CONTENT" ] || CONTENT="$CONTENT_MD"
+          #
+          # 🚨 Two attempts, then a LOUD fallback.
+          #
+          # This used to discard stderr and fall back silently, so a failed
+          # render published literal "##" and "**bold**" to the support site
+          # with nothing anywhere saying it had happened — page-builder 3.5.0
+          # is still sitting there like that. A fallback nobody can see is
+          # indistinguishable from working, which is how it survived.
+          #
+          # The retry is because the failure is intermittent: the same release
+          # notes rendered fine on other repos the same week.
+          CONTENT=""
+          for attempt in 1 2; do
+            if CONTENT=$(jq -n --arg text "$CONTENT_MD" '{text:$text, mode:"gfm"}' \
+                 | gh api --method POST /markdown --input - 2>/tmp/md-render-err.txt) \
+               && [ -n "$CONTENT" ]; then
+              break
+            fi
+            CONTENT=""
+            if [ "$attempt" = "1" ]; then sleep 3; fi
+          done
+
+          if [ -z "$CONTENT" ]; then
+            # Still posted, because a rough announcement beats none — but the run
+            # is now marked so somebody can go and fix the post.
+            echo "::warning title=Markdown render failed::Posting the Markdown SOURCE, which this site does not render — the announcement will contain literal ## and **. $(head -c 300 /tmp/md-render-err.txt 2>/dev/null | tr -s '[:space:]' ' ')"
+            CONTENT="$CONTENT_MD"
+          fi
 
           PAYLOAD=$(jq -n \
             --arg content "$CONTENT" \
