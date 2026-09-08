@@ -171,6 +171,14 @@ jobs:
             CONTENT="$CONTENT_MD"
           fi
 
+          # 🚨 <tt> is not in Scribe's allowed vocabulary, so the site ESCAPES it
+          # and the announcement shows a literal "&lt;tt&gt;" to every reader.
+          # GitHub's GFM renderer emits it unprompted: a bare compare URL is
+          # autolinked as <a class="commit-link">owner/repo@<tt>a...b</tt></a>,
+          # which is exactly the "Full Changelog" line release notes end with.
+          # <code> renders identically and is allowed.
+          CONTENT=$(printf '%s' "$CONTENT" | sed -e 's|<tt>|<code>|g' -e 's|</tt>|</code>|g')
+
           PAYLOAD=$(jq -n \
             --arg content "$CONTENT" \
             --arg did "$FLARUM_DISCUSSION_ID" \
