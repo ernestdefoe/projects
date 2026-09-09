@@ -177,7 +177,34 @@ jobs:
           # autolinked as <a class="commit-link">owner/repo@<tt>a...b</tt></a>,
           # which is exactly the "Full Changelog" line release notes end with.
           # <code> renders identically and is allowed.
-          CONTENT=$(printf '%s' "$CONTENT" | sed -e 's|<tt>|<code>|g' -e 's|</tt>|</code>|g')
+          # 🚨 Three more cases of the very same problem, every one of them
+          # seen in a published post. GitHub also wraps fenced code blocks in
+          # <div class="highlight..."> and tables in
+          # <markdown-accessiblity-table> (their spelling of "accessibility",
+          # so match it exactly), and it escapes `<script>` to &lt;script&gt;
+          # inside <code> — which Flarum then escapes AGAIN, so the reader is
+          # shown the entity instead of the tag. Send the literal characters
+          # and let Flarum escape them exactly once.
+          #
+          # 🚨 The captures are copied into lexicals before the inner
+          # substitutions run. Those substitutions reset $1, so building the
+          # replacement straight from $1 silently drops the opening <code>
+          # tag and leaves a stray </code> behind in the prose.
+          CONTENT=$(printf '%s' "$CONTENT" | perl -0777 -pe '
+            s|<tt>|<code>|g;
+            s|</tt>|</code>|g;
+            s|<div class="highlight[^"]*">\s*||g;
+            s|</pre>\s*</div>|</pre>|g;
+            s|</?markdown-accessiblity-table>||g;
+            s{(<code[^>]*>)(.*?)</code>}{
+              my ($open, $inner) = ($1, $2);
+              $inner =~ s{&lt;}{<}g;
+              $inner =~ s{&gt;}{>}g;
+              $inner =~ s{&amp;}{&}g;
+              $open . $inner . "</code>";
+            }ges;
+            s|&amp;|&|g;
+          ')
 
           PAYLOAD=$(jq -n \
             --arg content "$CONTENT" \
