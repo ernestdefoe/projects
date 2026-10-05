@@ -5,9 +5,8 @@ import ProjectsSkeleton, { rememberCount } from './ProjectsSkeleton';
 import extractText from 'flarum/common/utils/extractText';
 import ProjectCard from './ProjectCard';
 import StyledSelect from './StyledSelect';
-import ProjectPage from './ProjectPage';
-import ProjectFormModal from './ProjectFormModal';
-import { config, listProjects, likeProject, type ListParams, type Project } from '../../common/api';
+import openProjectForm from '../openProjectForm';
+import { config, loadConfig, listProjects, likeProject, type ListParams, type Project } from '../../common/api';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.forum.' + k, p);
@@ -44,12 +43,13 @@ export default class ProjectsPage extends Page {
 
   oninit(vnode: any) {
     super.oninit(vnode);
+    loadConfig().then(() => m.redraw());
     app.setTitle(t('page_title') as unknown as string);
     this.category = (m.route.param('category') as string) || '';
 
     // Restore the remembered grid only when returning from a project page for
     // the same filter — a fresh visit (or a different tag) loads normally.
-    const cameFromProject = !!(app.previous && app.previous.matches && app.previous.matches(ProjectPage));
+    const cameFromProject = !!(app.previous && app.previous.get('routeName') === 'projects.show');
     if (browseCache && cameFromProject && browseCache.category === this.category) {
       this.q = browseCache.q;
       this.sort = browseCache.sort;
@@ -196,7 +196,7 @@ export default class ProjectsPage extends Page {
   }
 
   add() {
-    app.modal.show(ProjectFormModal, { onsave: () => this.load() });
+    openProjectForm({ onsave: () => this.load() });
   }
 
   view() {

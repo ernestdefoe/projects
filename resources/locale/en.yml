@@ -36,7 +36,6 @@ ernestdefoe-projects:
     like_error: "Couldn't update your like. Please try again."
     retry: "Retry"
     like: "Like"
-    with: "with"
     feature: "Feature on profile"
     featured: "Featured"
     image_too_large: "The image must be at most {max} MB."

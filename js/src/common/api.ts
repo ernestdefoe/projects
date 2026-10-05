@@ -141,11 +141,28 @@ function base(): string {
   return app.forum.attribute<string>('apiUrl') + '/projects';
 }
 
-/** Admin-defined building blocks shipped in the forum boot payload. */
+let loadedConfig: ProjectsConfig = { categories: [], fields: [], buttons: [] };
+let configRequest: Promise<ProjectsConfig> | null = null;
+
+/** Admin-defined building blocks, once loadConfig() has fetched them. */
 export function config(): ProjectsConfig {
-  return (
-    app.forum.attribute<ProjectsConfig>('projectsConfig') || { categories: [], fields: [], buttons: [] }
-  );
+  return loadedConfig;
+}
+
+/**
+ * Fetches the definitions once per page load (they used to ride in the forum
+ * payload of every page). A failure is retried on the next call.
+ */
+export function loadConfig(): Promise<ProjectsConfig> {
+  return (configRequest ||= app
+    .request<{ data: ProjectsConfig }>({ method: 'GET', url: base() + '/config' })
+    .then(
+      (r) => (loadedConfig = r.data),
+      () => {
+        configRequest = null;
+        return loadedConfig;
+      }
+    ));
 }
 
 export function listProjects(params: ListParams = {}): Promise<ListResult> {

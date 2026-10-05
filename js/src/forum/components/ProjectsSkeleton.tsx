@@ -77,8 +77,10 @@ export class ProjectSkeleton extends Component {
       m('.ProjectsSkeleton-media.ProjectsSkeleton-media--wide'),
       m('.ProjectsSkeleton-bar.ProjectsSkeleton-bar--heading'),
       m('.ProjectsSkeleton-bar.ProjectsSkeleton-bar--meta'),
-      ...[0, 1, 2].map((p) =>
-        m('.ProjectsSkeleton-para', { key: p }, [
+      // No keys: these sit beside unkeyed siblings, and Mithril refuses a mix
+      // (the project page rendered nothing at all).
+      ...[0, 1, 2].map(() =>
+        m('.ProjectsSkeleton-para', [
           m('.ProjectsSkeleton-bar.ProjectsSkeleton-bar--line'),
           m('.ProjectsSkeleton-bar.ProjectsSkeleton-bar--line'),
           m('.ProjectsSkeleton-bar.ProjectsSkeleton-bar--short'),

@@ -5,17 +5,15 @@ import UserPage from 'flarum/forum/components/UserPage';
 import PostUser from 'flarum/forum/components/PostUser';
 import LinkButton from 'flarum/common/components/LinkButton';
 import Link from 'flarum/common/components/Link';
-import ProjectsPage from './components/ProjectsPage';
-import ProjectPage from './components/ProjectPage';
-import UserProjectsPage from './components/UserProjectsPage';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.forum.' + k, p);
 
 app.initializers.add('ernestdefoe/projects', () => {
-  app.routes['projects'] = { path: '/projects', component: ProjectsPage };
-  app.routes['projects.show'] = { path: '/projects/p/:slug', component: ProjectPage };
-  app.routes['user.projects'] = { path: '/u/:username/projects', component: UserProjectsPage };
+  // The pages are chunks fetched when first visited, not part of every page.
+  app.routes['projects'] = { path: '/projects', component: () => import('./components/ProjectsPage') };
+  app.routes['projects.show'] = { path: '/projects/p/:slug', component: () => import('./components/ProjectPage') };
+  app.routes['user.projects'] = { path: '/u/:username/projects', component: () => import('./components/UserProjectsPage') };
 
   // Sidebar nav link (sits with "All Discussions").
   extend(IndexSidebar.prototype, 'navItems', function (items: any) {

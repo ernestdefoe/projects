@@ -7,7 +7,6 @@
  */
 
 use ErnestDefoe\Projects\Api\Controller;
-use ErnestDefoe\Projects\Api\DefinitionSerializer;
 use ErnestDefoe\Projects\Api\Resource;
 use ErnestDefoe\Projects\Event\ProjectWasPublished;
 use ErnestDefoe\Projects\Listener\AwardBadgeOnPublish;
@@ -21,6 +20,9 @@ use Flarum\User\User;
 return [
     (new Extend\Frontend('forum'))
         ->js(__DIR__ . '/js/dist/forum.js')
+        // The pages and the form are chunks fetched on first use; without this
+        // they 404 and the projects pages never render.
+        ->jsDirectory(__DIR__ . '/js/dist/forum')
         ->css(__DIR__ . '/less/forum.less')
         ->route('/projects', 'projects')
         ->route('/projects/p/{slug}', 'projects.show'),
@@ -62,18 +64,14 @@ return [
         ->serializeToForum('projectsMinCategories', 'ernestdefoe-projects.min_categories', fn ($v) => (int) $v)
         ->serializeToForum('projectsMaxCategories', 'ernestdefoe-projects.max_categories', fn ($v) => (int) $v),
 
-    // ---- Forum payload: permissions + the building-block definitions --------
+    // ---- Forum payload: permissions (the definitions are fetched by the
+    //      projects page from GET /api/projects/config, not shipped everywhere)
     (new Extend\ApiResource(ForumResource::class))
         ->fields(fn () => [
             Schema\Boolean::make('canCreateProject')
                 ->get(fn ($model, Context $context) => $context->getActor()->can('projects.create')),
             Schema\Boolean::make('canModerateProjects')
                 ->get(fn ($model, Context $context) => $context->getActor()->can('projects.moderate')),
-            // The submission form + filters need the admin-defined categories,
-            // custom fields and button slots — ship them in the boot payload so
-            // the UI renders without an extra round-trip.
-            Schema\Arr::make('projectsConfig')
-                ->get(fn () => DefinitionSerializer::cached()),
         ]),
 
     // ---- User payload: the featured-project snapshot (badge + profile) ------

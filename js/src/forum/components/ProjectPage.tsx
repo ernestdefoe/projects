@@ -3,7 +3,7 @@ import Page from 'flarum/common/components/Page';
 import Button from 'flarum/common/components/Button';
 import { ProjectSkeleton } from './ProjectsSkeleton';
 import Link from 'flarum/common/components/Link';
-import ProjectFormModal from './ProjectFormModal';
+import openProjectForm from '../openProjectForm';
 import { getProject, likeProject, featureProject, deleteProject, moderateProject, type Project } from '../../common/api';
 import { authorAvatar } from '../authorAvatar';
 
@@ -133,22 +133,6 @@ export default class ProjectPage extends Page {
     ]);
   }
 
-  coAuthorsLine(p: Project) {
-    return m(
-      '.ProjectPage-coAuthors',
-      [
-        t('with'),
-        ' ',
-        ...p.coAuthors.map((a, i) => [
-          i > 0 ? ', ' : null,
-          a.username
-            ? m(Link, { href: app.route('user', { username: a.username }) }, a.displayName || a.username)
-            : m('span', a.name),
-        ]),
-      ]
-    );
-  }
-
   fields(p: Project) {
     if (!p.fields.length) return null;
     return m('.ProjectPage-fields', p.fields.map((f) =>
@@ -178,7 +162,7 @@ export default class ProjectPage extends Page {
       }, p.isFeatured ? t('featured') : t('feature')));
     }
     if (p.canEdit) {
-      items.push(Button.component({ className: 'Button', icon: 'fas fa-pencil', onclick: () => app.modal.show(ProjectFormModal, { project: p, onsave: () => this.loadProject(p.slug) }) }, t('edit')));
+      items.push(Button.component({ className: 'Button', icon: 'fas fa-pencil', onclick: () => openProjectForm({ project: p, onsave: () => this.loadProject(p.slug) }) }, t('edit')));
     }
     if (p.canDelete) {
       items.push(Button.component({ className: 'Button Button--danger', icon: 'fas fa-trash', onclick: () => this.remove() }, t('delete')));

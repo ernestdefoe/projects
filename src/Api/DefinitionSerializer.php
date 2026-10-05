@@ -17,20 +17,20 @@ class DefinitionSerializer
     public const CACHE_KEY = 'ernestdefoe-projects.definitions';
 
     /**
-     * all(), cached — for the forum payload.
-     *
-     * 🚨 The forum payload is serialised on EVERY page load, so reading the
-     * definitions there straight from the database cost four queries per page
-     * view for data that changes when an admin edits it. Forgotten by every
-     * controller that writes a category, field or button (and by reorder); the
-     * TTL only covers fof/badges renaming a badge, which we cannot observe.
+     * What the forum needs (categories, fields, buttons — not the admin's
+     * badge list), cached: the projects page and the submission form fetch it
+     * from GET /api/projects/config. It used to ride in the forum payload of
+     * every page on the site. Forgotten by every controller that writes a
+     * category, field or button (and by reorder).
      */
     public static function cached(): array
     {
+        $forum = fn () => ['categories' => self::categories(), 'fields' => self::fields(), 'buttons' => self::buttons()];
+
         try {
-            return resolve(Cache::class)->remember(self::CACHE_KEY, 600, fn () => self::all());
+            return resolve(Cache::class)->remember(self::CACHE_KEY, 600, $forum);
         } catch (\Throwable $e) {
-            return self::all();
+            return $forum();
         }
     }
 
