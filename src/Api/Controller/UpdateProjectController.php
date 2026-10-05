@@ -36,7 +36,7 @@ class UpdateProjectController implements RequestHandlerInterface
 
         $project = $this->repository->update($project, $attrs, $actor);
 
-        $project->refresh()->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user']);
+        $project->refresh()->load(Project::serializedRelations($actor));
 
         return new JsonResponse(['data' => $this->serializer->serialize($project, $actor, true, $request)]);
     }

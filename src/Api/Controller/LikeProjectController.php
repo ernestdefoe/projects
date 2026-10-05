@@ -39,7 +39,7 @@ class LikeProjectController implements RequestHandlerInterface
             Project::query()->whereKey($project->id)->increment('likes_count');
         }
 
-        $project->refresh()->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user']);
+        $project->refresh()->load(Project::serializedRelations($actor));
 
         // Pass $full=true so the response includes contentHtml — otherwise the
         // frontend (which replaces its project with this data) loses the rendered

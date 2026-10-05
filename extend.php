@@ -73,7 +73,7 @@ return [
             // custom fields and button slots — ship them in the boot payload so
             // the UI renders without an extra round-trip.
             Schema\Arr::make('projectsConfig')
-                ->get(fn () => DefinitionSerializer::all()),
+                ->get(fn () => DefinitionSerializer::cached()),
         ]),
 
     // ---- User payload: the featured-project snapshot (badge + profile) ------

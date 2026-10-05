@@ -84,7 +84,7 @@ class ListProjectsController implements RequestHandlerInterface
         $total = (clone $query)->count();
 
         $projects = $query
-            ->with(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user'])
+            ->with(Project::serializedRelations($actor))
             ->forPage($page, $perPage)
             ->get();
 

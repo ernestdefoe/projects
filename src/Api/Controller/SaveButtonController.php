@@ -67,6 +67,7 @@ class SaveButtonController implements RequestHandlerInterface
 
         $button->position = (int) Arr::get($attrs, 'position', $button->position ?? 0);
         $button->save();
+        DefinitionSerializer::forget();
 
         return new JsonResponse(['data' => DefinitionSerializer::button($button)], $id ? 200 : 201);
     }

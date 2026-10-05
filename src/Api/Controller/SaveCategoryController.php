@@ -46,6 +46,7 @@ class SaveCategoryController implements RequestHandlerInterface
         $category->badge_id = (int) Arr::get($attrs, 'badgeId', 0) ?: null;
         $category->position = (int) Arr::get($attrs, 'position', $category->position ?? 0);
         $category->save();
+        DefinitionSerializer::forget();
 
         return new JsonResponse(['data' => DefinitionSerializer::category($category)], $id ? 200 : 201);
     }

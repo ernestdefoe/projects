@@ -2,6 +2,7 @@
 
 namespace ErnestDefoe\Projects\Api\Controller;
 
+use ErnestDefoe\Projects\Api\DefinitionSerializer;
 use ErnestDefoe\Projects\Model\ProjectButton;
 use ErnestDefoe\Projects\Model\ProjectCategory;
 use ErnestDefoe\Projects\Model\ProjectField;
@@ -46,6 +47,8 @@ class ReorderDefinitionsController implements RequestHandlerInterface
         foreach ($ids as $index => $id) {
             $model::query()->where('id', $id)->update(['position' => $index]);
         }
+
+        DefinitionSerializer::forget();
 
         return new JsonResponse(null, 204);
     }

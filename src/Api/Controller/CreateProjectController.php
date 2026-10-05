@@ -4,6 +4,7 @@ namespace ErnestDefoe\Projects\Api\Controller;
 
 use ErnestDefoe\Projects\Api\ProjectRepository;
 use ErnestDefoe\Projects\Api\ProjectSerializer;
+use ErnestDefoe\Projects\Model\Project;
 use Flarum\Http\RequestUtil;
 use Illuminate\Support\Arr;
 use Laminas\Diactoros\Response\JsonResponse;
@@ -34,7 +35,7 @@ class CreateProjectController implements RequestHandlerInterface
 
         $project = $this->repository->create($attrs, $actor, $canPublish);
 
-        $project->refresh()->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user']);
+        $project->refresh()->load(Project::serializedRelations($actor));
 
         return new JsonResponse(['data' => $this->serializer->serialize($project, $actor, true, $request)], 201);
     }

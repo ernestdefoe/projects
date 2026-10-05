@@ -45,7 +45,7 @@ class FeatureProjectController implements RequestHandlerInterface
         $project->is_featured = $makeFeatured;
         $project->save(); // model hook refreshes the user's featured snapshot
 
-        $project->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user']);
+        $project->load(Project::serializedRelations($actor));
 
         // Pass $full=true so the response includes contentHtml — otherwise the
         // frontend (which replaces its project with this data) loses the rendered

@@ -2,6 +2,7 @@
 
 namespace ErnestDefoe\Projects\Api\Controller;
 
+use ErnestDefoe\Projects\Api\DefinitionSerializer;
 use ErnestDefoe\Projects\Model\ProjectCategory;
 use Flarum\Http\RequestUtil;
 use Illuminate\Support\Arr;
@@ -19,6 +20,7 @@ class DeleteCategoryController implements RequestHandlerInterface
 
         $category = ProjectCategory::query()->findOrFail((int) Arr::get($request->getQueryParams(), 'id'));
         $category->delete(); // pivot rows cascade; projects.primary_category_id nulls
+        DefinitionSerializer::forget();
 
         return new EmptyResponse(204);
     }

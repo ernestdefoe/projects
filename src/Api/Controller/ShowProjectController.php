@@ -33,7 +33,7 @@ class ShowProjectController implements RequestHandlerInterface
                     $q->orWhere('id', (int) $key);
                 }
             })
-            ->with(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user'])
+            ->with(Project::serializedRelations($actor))
             ->first();
 
         if (! $project) {

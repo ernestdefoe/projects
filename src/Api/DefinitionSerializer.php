@@ -5,6 +5,7 @@ namespace ErnestDefoe\Projects\Api;
 use ErnestDefoe\Projects\Model\ProjectButton;
 use ErnestDefoe\Projects\Model\ProjectCategory;
 use ErnestDefoe\Projects\Model\ProjectField;
+use Illuminate\Contracts\Cache\Repository as Cache;
 
 /**
  * Serialises the admin-defined building blocks (categories, custom fields,
@@ -13,6 +14,35 @@ use ErnestDefoe\Projects\Model\ProjectField;
  */
 class DefinitionSerializer
 {
+    public const CACHE_KEY = 'ernestdefoe-projects.definitions';
+
+    /**
+     * all(), cached — for the forum payload.
+     *
+     * 🚨 The forum payload is serialised on EVERY page load, so reading the
+     * definitions there straight from the database cost four queries per page
+     * view for data that changes when an admin edits it. Forgotten by every
+     * controller that writes a category, field or button (and by reorder); the
+     * TTL only covers fof/badges renaming a badge, which we cannot observe.
+     */
+    public static function cached(): array
+    {
+        try {
+            return resolve(Cache::class)->remember(self::CACHE_KEY, 600, fn () => self::all());
+        } catch (\Throwable $e) {
+            return self::all();
+        }
+    }
+
+    public static function forget(): void
+    {
+        try {
+            resolve(Cache::class)->forget(self::CACHE_KEY);
+        } catch (\Throwable $e) {
+            // A cache that cannot be cleared expires on its own within the TTL.
+        }
+    }
+
     public static function all(): array
     {
         return [

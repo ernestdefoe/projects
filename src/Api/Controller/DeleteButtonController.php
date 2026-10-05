@@ -2,6 +2,7 @@
 
 namespace ErnestDefoe\Projects\Api\Controller;
 
+use ErnestDefoe\Projects\Api\DefinitionSerializer;
 use ErnestDefoe\Projects\Model\ProjectButton;
 use Flarum\Http\RequestUtil;
 use Illuminate\Support\Arr;
@@ -19,6 +20,7 @@ class DeleteButtonController implements RequestHandlerInterface
 
         $button = ProjectButton::query()->findOrFail((int) Arr::get($request->getQueryParams(), 'id'));
         $button->delete(); // links.button_id nulls
+        DefinitionSerializer::forget();
 
         return new EmptyResponse(204);
     }

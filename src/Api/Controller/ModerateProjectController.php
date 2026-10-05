@@ -48,7 +48,7 @@ class ModerateProjectController implements RequestHandlerInterface
             $this->events->dispatch(new ProjectWasPublished($project, $project->user ?? $actor));
         }
 
-        $project->load(['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'likes', 'coAuthors.user']);
+        $project->load(Project::serializedRelations($actor));
 
         return new JsonResponse(['data' => $this->serializer->serialize($project, $actor, true, $request)]);
     }

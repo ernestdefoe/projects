@@ -103,6 +103,27 @@ class Project extends AbstractModel
         return $this->belongsToMany(User::class, 'project_likes', 'project_id', 'user_id');
     }
 
+    /**
+     * The relations a serialised project reads, for `with()` / `load()`.
+     *
+     * 🚨 `likes` is constrained to the ACTOR. The serializer only asks "did the
+     * viewer like this?", and loading the relation unconstrained pulled every
+     * liker's whole user row for every project on the page — a popular project
+     * with a few thousand likes meant a few thousand users hydrated to answer a
+     * yes/no. Guests can't have liked anything, so they skip it entirely.
+     */
+    public static function serializedRelations(?User $actor): array
+    {
+        $relations = ['user', 'primaryCategory', 'categories', 'fieldValues.field', 'links.button', 'coAuthors.user'];
+
+        if ($actor && ! $actor->isGuest()) {
+            $actorId = (int) $actor->id;
+            $relations['likes'] = fn ($q) => $q->where('users.id', $actorId);
+        }
+
+        return $relations;
+    }
+
     public function isPublished(): bool
     {
         return $this->status === self::STATUS_PUBLISHED;

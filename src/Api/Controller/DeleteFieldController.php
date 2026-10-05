@@ -2,6 +2,7 @@
 
 namespace ErnestDefoe\Projects\Api\Controller;
 
+use ErnestDefoe\Projects\Api\DefinitionSerializer;
 use ErnestDefoe\Projects\Model\ProjectField;
 use Flarum\Http\RequestUtil;
 use Illuminate\Support\Arr;
@@ -19,6 +20,7 @@ class DeleteFieldController implements RequestHandlerInterface
 
         $field = ProjectField::query()->findOrFail((int) Arr::get($request->getQueryParams(), 'id'));
         $field->delete(); // field values cascade
+        DefinitionSerializer::forget();
 
         return new EmptyResponse(204);
     }

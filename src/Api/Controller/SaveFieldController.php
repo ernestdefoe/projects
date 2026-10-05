@@ -61,6 +61,7 @@ class SaveFieldController implements RequestHandlerInterface
 
         $field->position = (int) Arr::get($attrs, 'position', $field->position ?? 0);
         $field->save();
+        DefinitionSerializer::forget();
 
         return new JsonResponse(['data' => DefinitionSerializer::field($field)], $id ? 200 : 201);
     }
