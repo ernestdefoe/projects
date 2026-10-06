@@ -45,6 +45,11 @@ php flarum cache:clear
 
 Then open **Admin → Projects** to add categories, custom parameters and button slots.
 
+## Support
+
+- **Support forum:** [Projects on ernestdefoe.online](https://ernestdefoe.online/d/65)
+- **Bug reports:** [GitHub issues](https://github.com/ernestdefoe/projects/issues)
+
 ## License
 
 [MIT](LICENSE)
