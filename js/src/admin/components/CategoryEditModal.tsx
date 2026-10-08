@@ -91,7 +91,6 @@ export default class CategoryEditModal extends Modal<DefinitionModalAttrs<Catego
       })
       .catch((e: any) => {
         this.loading = false;
-        this.onerror(e);
         m.redraw();
       });
   }

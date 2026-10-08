@@ -87,7 +87,6 @@ export default class FieldEditModal extends Modal<DefinitionModalAttrs<FieldDef>
       })
       .catch((e: any) => {
         this.loading = false;
-        this.onerror(e);
         m.redraw();
       });
   }

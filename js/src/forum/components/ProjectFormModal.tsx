@@ -415,11 +415,10 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
       .catch((err) => {
         this.uploading = false;
         // Client-side rejections (e.g. an oversize file) are plain Errors with
-        // no HTTP status — Modal.onerror only handles request errors, so those
-        // messages were being silently dropped (the "no popup" report). Show an
-        // alert for them; route real server errors through onerror as before.
-        if (err && err.status) this.onerror(err);
-        else app.alerts.show({ type: 'error', dismissible: true }, (err && err.message) || t('image_error'));
+        // no HTTP status, so nothing shows them and they were silently dropped
+        // (the "no popup" report). Show an alert for them; a server error
+        // already has one, shown by app.request.
+        if (!(err && err.status)) app.alerts.show({ type: 'error', dismissible: true }, (err && err.message) || t('image_error'));
         m.redraw();
       });
   }
@@ -453,7 +452,6 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
       })
       .catch((err) => {
         this.loading = false;
-        this.onerror(err);
         m.redraw();
       });
   }

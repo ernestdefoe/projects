@@ -75,7 +75,6 @@ export default class ButtonEditModal extends Modal<DefinitionModalAttrs<ButtonDe
       })
       .catch((e: any) => {
         this.loading = false;
-        this.onerror(e);
         m.redraw();
       });
   }
