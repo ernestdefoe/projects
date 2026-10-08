@@ -38,15 +38,17 @@ export default class CategoryEditModal extends Modal<DefinitionModalAttrs<Catego
         // A picker over the actual badges — asking for a raw numeric ID sent
         // admins hunting for a number fof/badges never shows anywhere.
         (this.attrs.badges || []).length
-          ? m('select.FormControl', {
-              value: String(this.item.badgeId || ''),
-              onchange: (e: any) => (this.item.badgeId = e.target.value ? Number(e.target.value) : null),
-            }, [
-              m('option', { value: '' }, '—'),
-              ...(this.attrs.badges as { id: number; name: string }[]).map((b) =>
-                m('option', { value: String(b.id) }, `${b.name} (#${b.id})`)
-              ),
-            ])
+          ? m(
+              'select.FormControl',
+              {
+                value: String(this.item.badgeId || ''),
+                onchange: (e: any) => (this.item.badgeId = e.target.value ? Number(e.target.value) : null),
+              },
+              [
+                m('option', { value: '' }, '—'),
+                ...(this.attrs.badges as { id: number; name: string }[]).map((b) => m('option', { value: String(b.id) }, `${b.name} (#${b.id})`)),
+              ]
+            )
           : m('input.FormControl', {
               type: 'number',
               placeholder: '—',
@@ -55,7 +57,10 @@ export default class CategoryEditModal extends Modal<DefinitionModalAttrs<Catego
             }),
         m('span.helpText', t('config.category_badge_help')),
       ]),
-      m('.Form-group', Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, t('config.save'))),
+      m(
+        '.Form-group',
+        Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, t('config.save'))
+      ),
     ]);
   }
 

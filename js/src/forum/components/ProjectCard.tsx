@@ -26,26 +26,23 @@ export default class ProjectCard extends Component<ProjectCardAttrs> {
     const onLike: (p: Project) => void = this.attrs.onLike;
     const accent = p.primaryCategory?.color || 'var(--primary-color)';
 
-    return m(
-      '.ProjectCard',
-      { style: { '--project-accent': accent }, onclick: () => this.open(p) },
-      [
-        p.image
-          ? m('.ProjectCard-image', m('img', { src: p.image, alt: p.title, loading: 'lazy' }))
-          : m('.ProjectCard-image.ProjectCard-image--placeholder', m('i', { className: p.primaryCategory?.icon || 'fas fa-cube' })),
+    return m('.ProjectCard', { style: { '--project-accent': accent }, onclick: () => this.open(p) }, [
+      p.image
+        ? m('.ProjectCard-image', m('img', { src: p.image, alt: p.title, loading: 'lazy' }))
+        : m('.ProjectCard-image.ProjectCard-image--placeholder', m('i', { className: p.primaryCategory?.icon || 'fas fa-cube' })),
 
-        p.status !== 'published'
-          ? m('span.ProjectCard-status.ProjectCard-status--' + p.status, t('status.' + p.status))
-          : null,
+      p.status !== 'published' ? m('span.ProjectCard-status.ProjectCard-status--' + p.status, t('status.' + p.status)) : null,
 
-        m('.ProjectCard-body', [
-          p.categories.length
-            ? m(
-                '.ProjectCard-cats',
-                p.categories.slice(0, 3).map((c) =>
-                  // Clicking a tag on a card jumps to that tag's filter — the
-                  // same behavior as clicking a tag on the project page.
-                  m('button.ProjectCard-cat', {
+      m('.ProjectCard-body', [
+        p.categories.length
+          ? m(
+              '.ProjectCard-cats',
+              p.categories.slice(0, 3).map((c) =>
+                // Clicking a tag on a card jumps to that tag's filter — the
+                // same behavior as clicking a tag on the project page.
+                m(
+                  'button.ProjectCard-cat',
+                  {
                     type: 'button',
                     style: c.color ? { '--project-accent': c.color } : undefined,
                     title: c.description || undefined,
@@ -53,53 +50,65 @@ export default class ProjectCard extends Component<ProjectCardAttrs> {
                       e.stopPropagation();
                       m.route.set(app.route('projects') + '?category=' + c.slug);
                     },
-                  }, [
-                    c.icon ? m('i', { className: c.icon }) : null,
-                    ' ',
-                    c.name,
-                  ])
+                  },
+                  [c.icon ? m('i', { className: c.icon }) : null, ' ', c.name]
                 )
               )
-            : null,
+            )
+          : null,
 
-          m('h3.ProjectCard-title', p.title),
+        m('h3.ProjectCard-title', p.title),
 
-          (() => {
-            const people = [...(p.author ? [p.author] : []), ...(p.coAuthors || [])];
-            return people.length
-              // No separators between names — spacing alone divides them (the
+        (() => {
+          const people = [...(p.author ? [p.author] : []), ...(p.coAuthors || [])];
+          return people.length
+            ? // No separators between names — spacing alone divides them (the
               // middot misaligned against the taller avatar names). See thread.
-              ? m('.ProjectCard-byline', people.map((person: any) => {
+              m(
+                '.ProjectCard-byline',
+                people.map((person: any) => {
                   const name = person.displayName || person.name || person.username;
                   return person.username
-                    ? m('a.ProjectCard-author', {
-                        href: app.route('user', { username: person.username }),
-                        onclick: (e: Event) => e.stopPropagation(),
-                      }, [authorAvatar(person), m('span', name)])
+                    ? m(
+                        'a.ProjectCard-author',
+                        {
+                          href: app.route('user', { username: person.username }),
+                          onclick: (e: Event) => e.stopPropagation(),
+                        },
+                        [authorAvatar(person), m('span', name)]
+                      )
                     : m('span.ProjectCard-author.ProjectCard-author--text', name);
-                }))
-              : null;
-          })(),
+                })
+              )
+            : null;
+        })(),
 
-          p.madeWithAi
-            ? m('span.ProjectCard-aiTag', { title: t('ai_disclaimer') }, [m('i.fas.fa-robot'), ' ', t('ai_badge')])
-            : null,
+        p.madeWithAi ? m('span.ProjectCard-aiTag', { title: t('ai_disclaimer') }, [m('i.fas.fa-robot'), ' ', t('ai_badge')]) : null,
 
-          this.cardFields(p),
+        this.cardFields(p),
 
-          p.excerpt ? this.excerptBlock(p) : null,
-        ]),
+        p.excerpt ? this.excerptBlock(p) : null,
+      ]),
 
-        m('.ProjectCard-footer', [
-          m('.ProjectCard-links', this.links(p)),
-          this.attrs.onFeature && p.canFeature
-            ? m('button.ProjectCard-feature' + (p.isFeatured ? '.is-featured' : ''), {
+      m('.ProjectCard-footer', [
+        m('.ProjectCard-links', this.links(p)),
+        this.attrs.onFeature && p.canFeature
+          ? m(
+              'button.ProjectCard-feature' + (p.isFeatured ? '.is-featured' : ''),
+              {
                 type: 'button',
                 title: p.isFeatured ? t('featured') : t('feature'),
-                onclick: (e: Event) => { e.stopPropagation(); this.attrs.onFeature?.(p); },
-              }, m('i', { className: (p.isFeatured ? 'fas' : 'far') + ' fa-star' }))
-            : null,
-          m('button.ProjectCard-like' + (p.liked ? '.is-liked' : ''), {
+                onclick: (e: Event) => {
+                  e.stopPropagation();
+                  this.attrs.onFeature?.(p);
+                },
+              },
+              m('i', { className: (p.isFeatured ? 'fas' : 'far') + ' fa-star' })
+            )
+          : null,
+        m(
+          'button.ProjectCard-like' + (p.liked ? '.is-liked' : ''),
+          {
             type: 'button',
             disabled: p.liked === null,
             title: t('like'),
@@ -107,10 +116,11 @@ export default class ProjectCard extends Component<ProjectCardAttrs> {
               e.stopPropagation();
               onLike && onLike(p);
             },
-          }, [m('i', { className: (p.liked ? 'fas' : 'far') + ' fa-heart' }), ' ', String(p.likesCount)]),
-        ]),
-      ]
-    );
+          },
+          [m('i', { className: (p.liked ? 'fas' : 'far') + ' fa-heart' }), ' ', String(p.likesCount)]
+        ),
+      ]),
+    ]);
   }
 
   cardFields(p: Project) {
@@ -119,14 +129,16 @@ export default class ProjectCard extends Component<ProjectCardAttrs> {
 
     return m(
       '.ProjectCard-fields',
-      fields.slice(0, 4).map((f) =>
-        m('span.ProjectCard-field', { title: f.name }, [
-          f.icon ? m('i', { className: f.icon }) : null,
-          ' ',
-          m('span.ProjectCard-fieldName', f.name + ':'),
-          m('span.ProjectCard-fieldVal', this.formatField(f)),
-        ])
-      )
+      fields
+        .slice(0, 4)
+        .map((f) =>
+          m('span.ProjectCard-field', { title: f.name }, [
+            f.icon ? m('i', { className: f.icon }) : null,
+            ' ',
+            m('span.ProjectCard-fieldName', f.name + ':'),
+            m('span.ProjectCard-fieldVal', this.formatField(f)),
+          ])
+        )
     );
   }
 

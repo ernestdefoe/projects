@@ -35,22 +35,36 @@ export default class FieldEditModal extends Modal<DefinitionModalAttrs<FieldDef>
       this.text('description', t('config.field_param_description')),
       m('.Form-group', [
         m('label', t('config.field_type')),
-        m('select.FormControl', { value: this.item.type, onchange: (e: any) => (this.item.type = e.target.value) },
-          TYPES.map((ty) => m('option', { value: ty }, t('config.types.' + ty)))),
+        m(
+          'select.FormControl',
+          { value: this.item.type, onchange: (e: any) => (this.item.type = e.target.value) },
+          TYPES.map((ty) => m('option', { value: ty }, t('config.types.' + ty)))
+        ),
       ]),
       this.item.type === 'select'
         ? m('.Form-group', [
             m('label', t('config.field_options')),
-            m('textarea.FormControl', { rows: 4, placeholder: t('config.field_options_help'), value: this.optionsText, oninput: (e: any) => (this.optionsText = e.target.value) }),
+            m('textarea.FormControl', {
+              rows: 4,
+              placeholder: t('config.field_options_help'),
+              value: this.optionsText,
+              oninput: (e: any) => (this.optionsText = e.target.value),
+            }),
           ])
         : null,
       this.text('icon', t('config.field_icon'), 'fas fa-tag'),
       this.text('prefix', t('config.field_prefix')),
       this.text('suffix', t('config.field_suffix')),
-      m('.Form-group', m(Switch, { state: !!this.item.isRequired, onchange: (v: boolean) => (this.item.isRequired = v) }, t('config.field_required'))),
+      m(
+        '.Form-group',
+        m(Switch, { state: !!this.item.isRequired, onchange: (v: boolean) => (this.item.isRequired = v) }, t('config.field_required'))
+      ),
       m('.Form-group', m(Switch, { state: this.item.onCard !== false, onchange: (v: boolean) => (this.item.onCard = v) }, t('config.field_on_card'))),
       categoryRestrictionField(this.attrs.categories, this.item),
-      m('.Form-group', Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, t('config.save'))),
+      m(
+        '.Form-group',
+        Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, t('config.save'))
+      ),
     ]);
   }
 
@@ -63,7 +77,10 @@ export default class FieldEditModal extends Modal<DefinitionModalAttrs<FieldDef>
 
   submit() {
     this.loading = true;
-    const options = this.optionsText.split('\n').map((s) => s.trim()).filter(Boolean);
+    const options = this.optionsText
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
     saveField(
       {
         name: this.item.name,

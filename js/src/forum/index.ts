@@ -17,11 +17,7 @@ app.initializers.add('ernestdefoe/projects', () => {
 
   // Sidebar nav link (sits with "All Discussions").
   extend(IndexSidebar.prototype, 'navItems', function (items: any) {
-    items.add(
-      'projects',
-      LinkButton.component({ href: app.route('projects'), icon: 'fas fa-cubes' }, t('nav')),
-      5
-    );
+    items.add('projects', LinkButton.component({ href: app.route('projects'), icon: 'fas fa-cubes' }, t('nav')), 5);
   });
 
   // "Projects" tab on member profiles.
@@ -30,10 +26,7 @@ app.initializers.add('ernestdefoe/projects', () => {
     if (!user) return;
     items.add(
       'projects',
-      LinkButton.component(
-        { href: app.route('user.projects', { username: user.username() }), icon: 'fas fa-cubes' },
-        t('profile.tab')
-      ),
+      LinkButton.component({ href: app.route('user.projects', { username: user.username() }), icon: 'fas fa-cubes' }, t('profile.tab')),
       80
     );
   });

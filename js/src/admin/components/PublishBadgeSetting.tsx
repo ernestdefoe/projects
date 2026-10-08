@@ -25,8 +25,15 @@ export default class PublishBadgeSetting extends Component {
   oninit(vnode: any) {
     super.oninit(vnode);
     getConfig()
-      .then((r) => { this.badges = r.data.badges || []; this.loading = false; m.redraw(); })
-      .catch(() => { this.loading = false; m.redraw(); });
+      .then((r) => {
+        this.badges = r.data.badges || [];
+        this.loading = false;
+        m.redraw();
+      })
+      .catch(() => {
+        this.loading = false;
+        m.redraw();
+      });
   }
 
   view() {
@@ -47,7 +54,13 @@ export default class PublishBadgeSetting extends Component {
     m.redraw();
     app
       .request({ method: 'POST', url: app.forum.attribute('apiUrl') + '/settings', body: { [KEY]: value } })
-      .then(() => { this.saving = false; m.redraw(); })
-      .catch(() => { this.saving = false; m.redraw(); });
+      .then(() => {
+        this.saving = false;
+        m.redraw();
+      })
+      .catch(() => {
+        this.saving = false;
+        m.redraw();
+      });
   }
 }

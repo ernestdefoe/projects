@@ -12,9 +12,5 @@ export function authorAvatar(author: ProjectAuthor, className = 'ProjectCard-ava
     return m('img', { className, src: author.avatarUrl, alt: '' });
   }
 
-  return m(
-    'span',
-    { className: className + ' ProjectAvatar--initial' },
-    (author.displayName || '?').charAt(0).toUpperCase()
-  );
+  return m('span', { className: className + ' ProjectAvatar--initial' }, (author.displayName || '?').charAt(0).toUpperCase());
 }

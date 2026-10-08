@@ -154,15 +154,13 @@ export function config(): ProjectsConfig {
  * payload of every page). A failure is retried on the next call.
  */
 export function loadConfig(): Promise<ProjectsConfig> {
-  return (configRequest ||= app
-    .request<{ data: ProjectsConfig }>({ method: 'GET', url: base() + '/config' })
-    .then(
-      (r) => (loadedConfig = r.data),
-      () => {
-        configRequest = null;
-        return loadedConfig;
-      }
-    ));
+  return (configRequest ||= app.request<{ data: ProjectsConfig }>({ method: 'GET', url: base() + '/config' }).then(
+    (r) => (loadedConfig = r.data),
+    () => {
+      configRequest = null;
+      return loadedConfig;
+    }
+  ));
 }
 
 export function listProjects(params: ListParams = {}): Promise<ListResult> {

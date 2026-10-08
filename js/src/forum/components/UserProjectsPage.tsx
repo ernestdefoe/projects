@@ -49,9 +49,7 @@ export default class UserProjectsPage extends UserPage {
     featureProject(project.id)
       .then((res) => {
         // The server clears any previously-featured project; reflect that locally.
-        this.projects = this.projects.map((p) =>
-          p.id === res.data.id ? res.data : { ...p, isFeatured: false }
-        );
+        this.projects = this.projects.map((p) => (p.id === res.data.id ? res.data : { ...p, isFeatured: false }));
         m.redraw();
       })
       .catch(() => app.alerts.show({ type: 'error' }, t('like_error')));
@@ -68,7 +66,12 @@ export default class UserProjectsPage extends UserPage {
 
     return m(
       '.UserProjectsPage',
-      m('.ProjectsGrid', this.projects.map((p) => m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x), onFeature: (x: Project) => this.feature(x) })))
+      m(
+        '.ProjectsGrid',
+        this.projects.map((p) =>
+          m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x), onFeature: (x: Project) => this.feature(x) })
+        )
+      )
     );
   }
 }

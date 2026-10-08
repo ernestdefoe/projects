@@ -139,7 +139,9 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
           value: this.contentText,
           disabled: this.loading,
           placeholder: extractText(t('form.content_placeholder')),
-          onchange: (v: string) => { this.contentText = v; },
+          onchange: (v: string) => {
+            this.contentText = v;
+          },
         }),
       ]),
 
@@ -165,7 +167,13 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
         m('span.helpText', t('form.ai_help')),
       ]),
 
-      m('.Form-group', Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, this.editing ? t('form.save') : t('form.create'))),
+      m(
+        '.Form-group',
+        Button.component(
+          { className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() },
+          this.editing ? t('form.save') : t('form.create')
+        )
+      ),
     ]);
   }
 
@@ -175,20 +183,25 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
 
     return m('.Form-group.ProjectForm-categories', [
       m('label', t('form.categories_label')),
-      min > 0 || max > 0
-        ? m('span.helpText', t('form.categories_hint', { min, max: max || '∞' }))
-        : null,
-      m('.ProjectForm-catChips', this.cfg.categories.map((c) => {
-        const on = this.categoryIds.includes(c.id);
-        return m('button.ProjectForm-catChip' + (on ? '.is-on' : ''), {
-          type: 'button',
-          style: c.color ? { '--project-accent': c.color } : undefined,
-          // The admin-written category description, surfaced on hover — it
-          // previously existed in the DB but displayed nowhere.
-          title: c.description || undefined,
-          onclick: () => this.toggleCategory(c.id),
-        }, [c.icon ? m('i', { className: c.icon }) : null, ' ', c.name]);
-      })),
+      min > 0 || max > 0 ? m('span.helpText', t('form.categories_hint', { min, max: max || '∞' })) : null,
+      m(
+        '.ProjectForm-catChips',
+        this.cfg.categories.map((c) => {
+          const on = this.categoryIds.includes(c.id);
+          return m(
+            'button.ProjectForm-catChip' + (on ? '.is-on' : ''),
+            {
+              type: 'button',
+              style: c.color ? { '--project-accent': c.color } : undefined,
+              // The admin-written category description, surfaced on hover — it
+              // previously existed in the DB but displayed nowhere.
+              title: c.description || undefined,
+              onclick: () => this.toggleCategory(c.id),
+            },
+            [c.icon ? m('i', { className: c.icon }) : null, ' ', c.name]
+          );
+        })
+      ),
       this.categoryIds.length > 1
         ? m('.ProjectForm-primary', [
             m('label', t('form.primary_label')),
@@ -216,7 +229,10 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
   fieldsSection() {
     const fields = this.cfg.fields.filter((f) => this.appliesToSelected(f.categoryIds));
     if (!fields.length) return null;
-    return m('.ProjectForm-fields', fields.map((f) => this.fieldInput(f)));
+    return m(
+      '.ProjectForm-fields',
+      fields.map((f) => this.fieldInput(f))
+    );
   }
 
   fieldInput(f: FieldDef) {
@@ -234,7 +250,13 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
       case 'select':
         input = m(StyledSelect, {
           value: val,
-          options: f.options.reduce((o: Record<string, string>, opt) => { o[opt] = opt; return o; }, { '': '—' }),
+          options: f.options.reduce(
+            (o: Record<string, string>, opt) => {
+              o[opt] = opt;
+              return o;
+            },
+            { '': '—' }
+          ),
           onchange: (v: string) => set(v),
         });
         break;
@@ -263,7 +285,10 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
     // section reads as one distinct block (thread request).
     return m('.ProjectForm-buttons', [
       m('label.ProjectForm-sectionLabel', t('form.links_label')),
-      m('.ProjectForm-linksBox', buttons.map((b) => this.buttonInput(b))),
+      m(
+        '.ProjectForm-linksBox',
+        buttons.map((b) => this.buttonInput(b))
+      ),
     ]);
   }
 
@@ -276,7 +301,11 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
       m('.ProjectForm-linkRow', [
         m('input.FormControl', { type: 'url', placeholder: 'https://', value: entry.url, oninput: (e: any) => (entry.url = e.target.value) }),
         b.allowCustomLabel
-          ? m('input.FormControl.ProjectForm-linkLabel', { placeholder: t('form.link_label_placeholder'), value: entry.label, oninput: (e: any) => (entry.label = e.target.value) })
+          ? m('input.FormControl.ProjectForm-linkLabel', {
+              placeholder: t('form.link_label_placeholder'),
+              value: entry.label,
+              oninput: (e: any) => (entry.label = e.target.value),
+            })
           : null,
       ]),
       domainHint ? m('span.helpText', domainHint) : null,
@@ -322,17 +351,13 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
             ? m(
                 '.ProjectForm-coAuthorResults',
                 this.coAuthorResults.map((u: any) =>
-                  m(
-                    'button.ProjectForm-coAuthorResult',
-                    { type: 'button', onclick: () => this.selectCoAuthor(u.username()) },
-                    [
-                      u.avatarUrl()
-                        ? m('img.ProjectForm-coAuthorResultAvatar', { src: u.avatarUrl(), alt: '' })
-                        : m('span.ProjectForm-coAuthorResultAvatar.ProjectAvatar--initial', (u.displayName() || '?').charAt(0).toUpperCase()),
-                      m('span.ProjectForm-coAuthorResultName', u.displayName()),
-                      m('span.ProjectForm-coAuthorResultUser', '@' + u.username()),
-                    ]
-                  )
+                  m('button.ProjectForm-coAuthorResult', { type: 'button', onclick: () => this.selectCoAuthor(u.username()) }, [
+                    u.avatarUrl()
+                      ? m('img.ProjectForm-coAuthorResultAvatar', { src: u.avatarUrl(), alt: '' })
+                      : m('span.ProjectForm-coAuthorResultAvatar.ProjectAvatar--initial', (u.displayName() || '?').charAt(0).toUpperCase()),
+                    m('span.ProjectForm-coAuthorResultName', u.displayName()),
+                    m('span.ProjectForm-coAuthorResultUser', '@' + u.username()),
+                  ])
                 )
               )
             : null,
@@ -411,7 +436,11 @@ export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
     if (!file) return;
     this.uploading = true;
     uploadImage(file)
-      .then((url) => { this.image = url; this.uploading = false; m.redraw(); })
+      .then((url) => {
+        this.image = url;
+        this.uploading = false;
+        m.redraw();
+      })
       .catch((err) => {
         this.uploading = false;
         // Client-side rejections (e.g. an oversize file) are plain Errors with

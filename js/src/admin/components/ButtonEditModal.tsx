@@ -34,14 +34,32 @@ export default class ButtonEditModal extends Modal<DefinitionModalAttrs<ButtonDe
       this.text('icon', t('config.field_icon'), 'fab fa-youtube'),
       m('.Form-group', [
         m('label', t('config.button_domains')),
-        m('textarea.FormControl', { rows: 3, placeholder: 'youtube.com\nyoutu.be', value: this.domainsText, oninput: (e: any) => (this.domainsText = e.target.value) }),
+        m('textarea.FormControl', {
+          rows: 3,
+          placeholder: 'youtube.com\nyoutu.be',
+          value: this.domainsText,
+          oninput: (e: any) => (this.domainsText = e.target.value),
+        }),
         m('span.helpText', t('config.button_domains_help')),
       ]),
-      m('.Form-group', m(Switch, { state: this.item.allowCustomLabel !== false, onchange: (v: boolean) => (this.item.allowCustomLabel = v) }, t('config.button_custom_label'))),
+      m(
+        '.Form-group',
+        m(
+          Switch,
+          { state: this.item.allowCustomLabel !== false, onchange: (v: boolean) => (this.item.allowCustomLabel = v) },
+          t('config.button_custom_label')
+        )
+      ),
       m('.Form-group', m(Switch, { state: !!this.item.isPrimary, onchange: (v: boolean) => (this.item.isPrimary = v) }, t('config.button_primary'))),
-      m('.Form-group', m(Switch, { state: !!this.item.isRequired, onchange: (v: boolean) => (this.item.isRequired = v) }, t('config.button_required'))),
+      m(
+        '.Form-group',
+        m(Switch, { state: !!this.item.isRequired, onchange: (v: boolean) => (this.item.isRequired = v) }, t('config.button_required'))
+      ),
       categoryRestrictionField(this.attrs.categories, this.item),
-      m('.Form-group', Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, t('config.save'))),
+      m(
+        '.Form-group',
+        Button.component({ className: 'Button Button--primary Button--block', loading: this.loading, onclick: () => this.submit() }, t('config.save'))
+      ),
     ]);
   }
 
@@ -54,7 +72,10 @@ export default class ButtonEditModal extends Modal<DefinitionModalAttrs<ButtonDe
 
   submit() {
     this.loading = true;
-    const allowedDomains = this.domainsText.split('\n').map((s) => s.trim()).filter(Boolean);
+    const allowedDomains = this.domainsText
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
     saveButton(
       {
         label: this.item.label,

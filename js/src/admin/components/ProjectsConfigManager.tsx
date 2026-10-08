@@ -68,7 +68,13 @@ export default class ProjectsConfigManager extends Component {
         t('config.fields_title'),
         t('config.fields_help'),
         this.config.fields,
-        (f: FieldDef) => [f.icon ? m('i', { className: f.icon }) : null, ' ', f.name, m('span.ProjectsConfig-meta', ' · ' + t('config.types.' + f.type)), f.isRequired ? m('span.ProjectsConfig-req', ' *') : null],
+        (f: FieldDef) => [
+          f.icon ? m('i', { className: f.icon }) : null,
+          ' ',
+          f.name,
+          m('span.ProjectsConfig-meta', ' · ' + t('config.types.' + f.type)),
+          f.isRequired ? m('span.ProjectsConfig-req', ' *') : null,
+        ],
         () => FieldEditModal,
         (id: number) => deleteField(id)
       ),
@@ -77,31 +83,67 @@ export default class ProjectsConfigManager extends Component {
         t('config.buttons_title'),
         t('config.buttons_help'),
         this.config.buttons,
-        (b: ButtonDef) => [b.icon ? m('i', { className: b.icon }) : null, ' ', b.label, b.allowedDomains.length ? m('span.ProjectsConfig-meta', ' · ' + b.allowedDomains.join(', ')) : null],
+        (b: ButtonDef) => [
+          b.icon ? m('i', { className: b.icon }) : null,
+          ' ',
+          b.label,
+          b.allowedDomains.length ? m('span.ProjectsConfig-meta', ' · ' + b.allowedDomains.join(', ')) : null,
+        ],
         () => ButtonEditModal,
         (id: number) => deleteButton(id)
       ),
     ]);
   }
 
-  section(key: string, title: string, help: string, items: any[], renderLabel: (i: any) => any, modalFor: (i?: any) => any, remove: (id: number) => Promise<void>) {
+  section(
+    key: string,
+    title: string,
+    help: string,
+    items: any[],
+    renderLabel: (i: any) => any,
+    modalFor: (i?: any) => any,
+    remove: (id: number) => Promise<void>
+  ) {
     return m('.ProjectsConfig-section', [
       m('.ProjectsConfig-sectionHead', [m('h3', title), m('span.helpText', help)]),
-      m('ul.ProjectsConfig-list', items.length
-        ? items.map((item, index) =>
-            m('li.ProjectsConfig-item', [
-              m('span.ProjectsConfig-label', renderLabel(item)),
-              m('.ProjectsConfig-itemActions', [
-                // Reorder controls — the saved order drives display everywhere
-                // (form, cards, project pages).
-                Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-arrow-up', disabled: index === 0, title: t('config.move_up'), onclick: () => this.move(key, index, -1) }),
-                Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-arrow-down', disabled: index === items.length - 1, title: t('config.move_down'), onclick: () => this.move(key, index, 1) }),
-                Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-pencil', onclick: () => this.edit(modalFor(item), item) }),
-                Button.component({ className: 'Button Button--icon Button--flat', icon: 'fas fa-trash', onclick: () => this.confirmDelete(remove, item.id) }),
-              ]),
-            ])
-          )
-        : m('li.ProjectsConfig-empty', t('config.none'))),
+      m(
+        'ul.ProjectsConfig-list',
+        items.length
+          ? items.map((item, index) =>
+              m('li.ProjectsConfig-item', [
+                m('span.ProjectsConfig-label', renderLabel(item)),
+                m('.ProjectsConfig-itemActions', [
+                  // Reorder controls — the saved order drives display everywhere
+                  // (form, cards, project pages).
+                  Button.component({
+                    className: 'Button Button--icon Button--flat',
+                    icon: 'fas fa-arrow-up',
+                    disabled: index === 0,
+                    title: t('config.move_up'),
+                    onclick: () => this.move(key, index, -1),
+                  }),
+                  Button.component({
+                    className: 'Button Button--icon Button--flat',
+                    icon: 'fas fa-arrow-down',
+                    disabled: index === items.length - 1,
+                    title: t('config.move_down'),
+                    onclick: () => this.move(key, index, 1),
+                  }),
+                  Button.component({
+                    className: 'Button Button--icon Button--flat',
+                    icon: 'fas fa-pencil',
+                    onclick: () => this.edit(modalFor(item), item),
+                  }),
+                  Button.component({
+                    className: 'Button Button--icon Button--flat',
+                    icon: 'fas fa-trash',
+                    onclick: () => this.confirmDelete(remove, item.id),
+                  }),
+                ]),
+              ])
+            )
+          : m('li.ProjectsConfig-empty', t('config.none'))
+      ),
       Button.component({ className: 'Button Button--icon', icon: 'fas fa-plus', onclick: () => this.edit(modalFor(), undefined) }, t('config.add')),
     ]);
   }
@@ -117,7 +159,10 @@ export default class ProjectsConfigManager extends Component {
     arr.splice(j, 0, item);
     arr.forEach((x, i) => (x.position = i));
     (this.config as any)[kind] = arr;
-    reorderDefinitions(kind as any, arr.map((x) => x.id)).catch(() => this.refresh());
+    reorderDefinitions(
+      kind as any,
+      arr.map((x) => x.id)
+    ).catch(() => this.refresh());
   }
 
   edit(modal: any, item?: any) {

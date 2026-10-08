@@ -16,8 +16,15 @@ const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-project
 // instead of reloading the grid from the top. Restored only on a genuine
 // back-navigation from a project page (see oninit).
 let browseCache: {
-  category: string; q: string; sort: 'recent' | 'popular' | 'title'; status: string;
-  projects: Project[]; page: number; hasMore: boolean; total: number; scrollY: number;
+  category: string;
+  q: string;
+  sort: 'recent' | 'popular' | 'title';
+  status: string;
+  projects: Project[];
+  page: number;
+  hasMore: boolean;
+  total: number;
+  scrollY: number;
 } | null = null;
 
 /**
@@ -87,8 +94,14 @@ export default class ProjectsPage extends Page {
   onremove() {
     // Snapshot the current browse state so a later Back can restore it.
     browseCache = {
-      category: this.category, q: this.q, sort: this.sort, status: this.status,
-      projects: this.projects, page: this.page, hasMore: this.hasMore, total: this.total,
+      category: this.category,
+      q: this.q,
+      sort: this.sort,
+      status: this.status,
+      projects: this.projects,
+      page: this.page,
+      hasMore: this.hasMore,
+      total: this.total,
       scrollY: window.pageYOffset,
     };
   }
@@ -159,15 +172,19 @@ export default class ProjectsPage extends Page {
   catPill(c: { slug: string; name: string; icon?: string | null; color?: string | null; description?: string | null } | null) {
     const slug = c ? c.slug : '';
     const on = this.category === slug;
-    return m('button.ProjectsPage-catPill' + (on ? '.is-on' : ''), {
-      type: 'button',
-      style: c?.color ? { '--project-accent': c.color } : undefined,
-      title: c?.description || undefined,
-      onclick: () => {
-        this.category = slug;
-        this.load();
+    return m(
+      'button.ProjectsPage-catPill' + (on ? '.is-on' : ''),
+      {
+        type: 'button',
+        style: c?.color ? { '--project-accent': c.color } : undefined,
+        title: c?.description || undefined,
+        onclick: () => {
+          this.category = slug;
+          this.load();
+        },
       },
-    }, [c?.icon ? m('i', { className: c.icon }) : null, c?.icon ? ' ' : null, c ? c.name : t('all_categories')]);
+      [c?.icon ? m('i', { className: c.icon }) : null, c?.icon ? ' ' : null, c ? c.name : t('all_categories')]
+    );
   }
 
   like(project: Project) {
@@ -204,90 +221,102 @@ export default class ProjectsPage extends Page {
     const canCreate = !!app.forum.attribute('canCreateProject');
     const canModerate = !!app.forum.attribute('canModerateProjects');
 
-    return m('.ProjectsPage', m('.container', [
-      m('.ProjectsPage-header', [
-        m('h1.ProjectsPage-title', t('page_title')),
-        canCreate
-          ? Button.component({ className: 'Button Button--primary', icon: 'fas fa-plus', onclick: () => this.add() }, t('add_project'))
-          : null,
-      ]),
-
-      m('.ProjectsPage-tools', [
-        m('.ProjectsPage-search', [
-          m('i.fas.fa-magnifying-glass.ProjectsPage-searchIcon'),
-          m('input.FormControl', {
-            type: 'search',
-            placeholder: t('search_placeholder'),
-            value: this.q,
-            oninput: (e: any) => this.search(e.target.value),
-          }),
+    return m(
+      '.ProjectsPage',
+      m('.container', [
+        m('.ProjectsPage-header', [
+          m('h1.ProjectsPage-title', t('page_title')),
+          canCreate
+            ? Button.component({ className: 'Button Button--primary', icon: 'fas fa-plus', onclick: () => this.add() }, t('add_project'))
+            : null,
         ]),
 
-        // StyledSelect renders a real Flarum Dropdown (ul.Dropdown-menu.dropdown-menu)
-        // rather than a native <select> whose option popup can't be themed — the
-        // same styled menu the discussion list uses for its latest/top/newest
-        // filter, as requested in the thread. The category filter is the pill row
-        // below instead of a dropdown.
-        m('.ProjectsPage-filter', m(StyledSelect, {
-          value: this.sort,
-          options: {
-            recent: extractText(t('sort.recent')),
-            popular: extractText(t('sort.popular')),
-            title: extractText(t('sort.title')),
-          },
-          onchange: (v: string) => { this.sort = v as typeof this.sort; this.load(); },
-        })),
+        m('.ProjectsPage-tools', [
+          m('.ProjectsPage-search', [
+            m('i.fas.fa-magnifying-glass.ProjectsPage-searchIcon'),
+            m('input.FormControl', {
+              type: 'search',
+              placeholder: t('search_placeholder'),
+              value: this.q,
+              oninput: (e: any) => this.search(e.target.value),
+            }),
+          ]),
 
-        canModerate
-          ? m('.ProjectsPage-filter', m(StyledSelect, {
-              value: this.status,
+          // StyledSelect renders a real Flarum Dropdown (ul.Dropdown-menu.dropdown-menu)
+          // rather than a native <select> whose option popup can't be themed — the
+          // same styled menu the discussion list uses for its latest/top/newest
+          // filter, as requested in the thread. The category filter is the pill row
+          // below instead of a dropdown.
+          m(
+            '.ProjectsPage-filter',
+            m(StyledSelect, {
+              value: this.sort,
               options: {
-                '': extractText(t('status.all')),
-                pending: extractText(t('status.pending')),
-                published: extractText(t('status.published')),
-                rejected: extractText(t('status.rejected')),
+                recent: extractText(t('sort.recent')),
+                popular: extractText(t('sort.popular')),
+                title: extractText(t('sort.title')),
               },
-              onchange: (v: string) => { this.status = v; this.load(); },
-            }))
-          : null,
-      ]),
+              onchange: (v: string) => {
+                this.sort = v as typeof this.sort;
+                this.load();
+              },
+            })
+          ),
 
-      // Category filter as pill buttons — more visual than the old dropdown,
-      // and each pill carries its description as a hover tooltip.
-      cfg.categories.length
-        ? m('.ProjectsPage-catPills', [
-            this.catPill(null),
-            ...cfg.categories.map((c) => this.catPill(c)),
-          ])
-        : null,
+          canModerate
+            ? m(
+                '.ProjectsPage-filter',
+                m(StyledSelect, {
+                  value: this.status,
+                  options: {
+                    '': extractText(t('status.all')),
+                    pending: extractText(t('status.pending')),
+                    published: extractText(t('status.published')),
+                    rejected: extractText(t('status.rejected')),
+                  },
+                  onchange: (v: string) => {
+                    this.status = v;
+                    this.load();
+                  },
+                })
+              )
+            : null,
+        ]),
 
-      this.loading
-        ? m(ProjectsSkeleton)
-        : this.error
-          ? m('.ProjectsPage-empty.ProjectsPage-error', [
-              m('i.fas.fa-circle-exclamation'),
-              m('p', this.error),
-              Button.component({ className: 'Button', onclick: () => this.load() }, t('retry')),
-            ])
-          : this.projects.length
-            ? [
-                m(
-                  '.ProjectsGrid',
-                  {
-                    /* 🚨 Measured on the element's own lifecycle, not after the
+        // Category filter as pill buttons — more visual than the old dropdown,
+        // and each pill carries its description as a hover tooltip.
+        cfg.categories.length ? m('.ProjectsPage-catPills', [this.catPill(null), ...cfg.categories.map((c) => this.catPill(c))]) : null,
+
+        this.loading
+          ? m(ProjectsSkeleton)
+          : this.error
+            ? m('.ProjectsPage-empty.ProjectsPage-error', [
+                m('i.fas.fa-circle-exclamation'),
+                m('p', this.error),
+                Button.component({ className: 'Button', onclick: () => this.load() }, t('retry')),
+              ])
+            : this.projects.length
+              ? [
+                  m(
+                    '.ProjectsGrid',
+                    {
+                      /* 🚨 Measured on the element's own lifecycle, not after the
                        fetch: a requestAnimationFrame there races Mithril's
                        redraw and can run before the grid exists. */
-                    oncreate: () => rememberCount(this.projects.length),
-                    onupdate: () => rememberCount(this.projects.length),
-                  },
-                  this.projects.map((p) => m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x) })
-                  )
-                ),
-                this.hasMore
-                  ? m('.ProjectsPage-more', Button.component({ className: 'Button', loading: this.loadingMore, onclick: () => this.loadMore() }, t('load_more')))
-                  : null,
-              ]
-            : m('.ProjectsPage-empty', [m('i.fas.fa-cubes'), m('p', t('empty'))]),
-    ]));
+                      oncreate: () => rememberCount(this.projects.length),
+                      onupdate: () => rememberCount(this.projects.length),
+                    },
+                    this.projects.map((p) => m(ProjectCard, { key: p.id, project: p, onLike: (x: Project) => this.like(x) }))
+                  ),
+                  this.hasMore
+                    ? m(
+                        '.ProjectsPage-more',
+                        Button.component({ className: 'Button', loading: this.loadingMore, onclick: () => this.loadMore() }, t('load_more'))
+                      )
+                    : null,
+                ]
+              : m('.ProjectsPage-empty', [m('i.fas.fa-cubes'), m('p', t('empty'))]),
+      ])
+    );
   }
 }

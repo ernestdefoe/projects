@@ -57,11 +57,17 @@ export default class ProjectPage extends Page {
   view() {
     if (this.loading) return m('.ProjectPage', m('.container', m(ProjectSkeleton)));
     if (this.error) {
-      return m('.ProjectPage', m('.container', m('.ProjectPage-empty.ProjectsPage-error', [
-        m('i.fas.fa-circle-exclamation'),
-        m('p', this.error),
-        Button.component({ className: 'Button', onclick: () => this.loadProject(m.route.param('slug')) }, t('retry')),
-      ])));
+      return m(
+        '.ProjectPage',
+        m(
+          '.container',
+          m('.ProjectPage-empty.ProjectsPage-error', [
+            m('i.fas.fa-circle-exclamation'),
+            m('p', this.error),
+            Button.component({ className: 'Button', onclick: () => this.loadProject(m.route.param('slug')) }, t('retry')),
+          ])
+        )
+      );
     }
     if (this.notFound || !this.project) return m('.ProjectPage', m('.container', m('.ProjectPage-empty', t('not_found'))));
 
@@ -82,11 +88,20 @@ export default class ProjectPage extends Page {
           : null,
 
         p.categories.length
-          ? m('.ProjectPage-cats', p.categories.map((c) =>
-              m(Link, { href: app.route('projects') + '?category=' + c.slug, className: 'ProjectCard-cat', style: c.color ? { '--project-accent': c.color } : undefined }, [
-                c.icon ? m('i', { className: c.icon }) : null, ' ', c.name,
-              ])
-            ))
+          ? m(
+              '.ProjectPage-cats',
+              p.categories.map((c) =>
+                m(
+                  Link,
+                  {
+                    href: app.route('projects') + '?category=' + c.slug,
+                    className: 'ProjectCard-cat',
+                    style: c.color ? { '--project-accent': c.color } : undefined,
+                  },
+                  [c.icon ? m('i', { className: c.icon }) : null, ' ', c.name]
+                )
+              )
+            )
           : null,
 
         m('h1.ProjectPage-title', p.title),
@@ -94,21 +109,25 @@ export default class ProjectPage extends Page {
         (() => {
           const people = [...(p.author ? [p.author] : []), ...(p.coAuthors || [])];
           return people.length
-            // No separators between names — spacing alone divides them (the
-            // middot misaligned against the taller avatar names). See thread.
-            ? m('.ProjectPage-byline', people.map((person: any) =>
-                person.username
-                  ? m(Link, { href: app.route('user', { username: person.username }), className: 'ProjectPage-author' }, [authorAvatar(person), m('span', person.displayName || person.username)])
-                  : m('span.ProjectPage-author.ProjectPage-author--text', person.name || person.displayName)
-              ))
+            ? // No separators between names — spacing alone divides them (the
+              // middot misaligned against the taller avatar names). See thread.
+              m(
+                '.ProjectPage-byline',
+                people.map((person: any) =>
+                  person.username
+                    ? m(Link, { href: app.route('user', { username: person.username }), className: 'ProjectPage-author' }, [
+                        authorAvatar(person),
+                        m('span', person.displayName || person.username),
+                      ])
+                    : m('span.ProjectPage-author.ProjectPage-author--text', person.name || person.displayName)
+                )
+              )
             : null;
         })(),
 
         p.excerpt ? m('p.ProjectPage-excerpt', p.excerpt) : null,
 
-        p.madeWithAi
-          ? m('.ProjectPage-aiNotice', [m('i.fas.fa-robot'), m('span', t('ai_disclaimer'))])
-          : null,
+        p.madeWithAi ? m('.ProjectPage-aiNotice', [m('i.fas.fa-robot'), m('span', t('ai_disclaimer'))]) : null,
 
         this.fields(p),
 
@@ -117,15 +136,21 @@ export default class ProjectPage extends Page {
         m('.ProjectPage-actions', [
           ...p.links.map((l) =>
             m('a.Button' + (l.isPrimary ? '.Button--primary' : ''), { href: l.url, target: '_blank', rel: 'noopener noreferrer nofollow' }, [
-              l.icon ? m('i.Button-icon', { className: l.icon }) : null, m('span.Button-label', l.label),
+              l.icon ? m('i.Button-icon', { className: l.icon }) : null,
+              m('span.Button-label', l.label),
             ])
           ),
           p.discussionId
-            ? m('a.Button', { href: app.forum.attribute('baseUrl') + '/d/' + p.discussionId }, [m('i.Button-icon.fas.fa-comments'), m('span.Button-label', t('discuss'))])
+            ? m('a.Button', { href: app.forum.attribute('baseUrl') + '/d/' + p.discussionId }, [
+                m('i.Button-icon.fas.fa-comments'),
+                m('span.Button-label', t('discuss')),
+              ])
             : null,
-          m('button.Button.ProjectPage-like' + (p.liked ? '.is-liked' : ''), { type: 'button', disabled: p.liked === null, onclick: () => this.like() }, [
-            m('i.Button-icon', { className: (p.liked ? 'fas' : 'far') + ' fa-heart' }), m('span.Button-label', String(p.likesCount)),
-          ]),
+          m(
+            'button.Button.ProjectPage-like' + (p.liked ? '.is-liked' : ''),
+            { type: 'button', disabled: p.liked === null, onclick: () => this.like() },
+            [m('i.Button-icon', { className: (p.liked ? 'fas' : 'far') + ' fa-heart' }), m('span.Button-label', String(p.likesCount))]
+          ),
         ]),
 
         this.management(p),
@@ -135,12 +160,15 @@ export default class ProjectPage extends Page {
 
   fields(p: Project) {
     if (!p.fields.length) return null;
-    return m('.ProjectPage-fields', p.fields.map((f) =>
-      m('.ProjectPage-fieldRow', [
-        m('.ProjectPage-fieldName', [f.icon ? m('i', { className: f.icon }) : null, ' ', f.name]),
-        m('.ProjectPage-fieldVal', (f.prefix || '') + (f.type === 'boolean' ? t('yes') : f.value) + (f.suffix ? ' ' + f.suffix : '')),
-      ])
-    ));
+    return m(
+      '.ProjectPage-fields',
+      p.fields.map((f) =>
+        m('.ProjectPage-fieldRow', [
+          m('.ProjectPage-fieldName', [f.icon ? m('i', { className: f.icon }) : null, ' ', f.name]),
+          m('.ProjectPage-fieldVal', (f.prefix || '') + (f.type === 'boolean' ? t('yes') : f.value) + (f.suffix ? ' ' + f.suffix : '')),
+        ])
+      )
+    );
   }
 
   management(p: Project) {
@@ -149,20 +177,35 @@ export default class ProjectPage extends Page {
     // Approve is offered for REJECTED projects too, so a moderator can change
     // their mind after declining. Reject only makes sense while pending.
     if (p.canModerate && (p.status === 'pending' || p.status === 'rejected')) {
-      items.push(Button.component({ className: 'Button Button--primary', icon: 'fas fa-check', onclick: () => this.moderate('approve') }, t('moderate.approve')));
+      items.push(
+        Button.component(
+          { className: 'Button Button--primary', icon: 'fas fa-check', onclick: () => this.moderate('approve') },
+          t('moderate.approve')
+        )
+      );
       if (p.status === 'pending') {
         items.push(Button.component({ className: 'Button', icon: 'fas fa-xmark', onclick: () => this.moderate('reject') }, t('moderate.reject')));
       }
     }
     if (p.canFeature) {
-      items.push(Button.component({
-        className: 'Button' + (p.isFeatured ? ' Button--primary' : ''),
-        icon: p.isFeatured ? 'fas fa-star' : 'far fa-star',
-        onclick: () => this.feature(),
-      }, p.isFeatured ? t('featured') : t('feature')));
+      items.push(
+        Button.component(
+          {
+            className: 'Button' + (p.isFeatured ? ' Button--primary' : ''),
+            icon: p.isFeatured ? 'fas fa-star' : 'far fa-star',
+            onclick: () => this.feature(),
+          },
+          p.isFeatured ? t('featured') : t('feature')
+        )
+      );
     }
     if (p.canEdit) {
-      items.push(Button.component({ className: 'Button', icon: 'fas fa-pencil', onclick: () => openProjectForm({ project: p, onsave: () => this.loadProject(p.slug) }) }, t('edit')));
+      items.push(
+        Button.component(
+          { className: 'Button', icon: 'fas fa-pencil', onclick: () => openProjectForm({ project: p, onsave: () => this.loadProject(p.slug) }) },
+          t('edit')
+        )
+      );
     }
     if (p.canDelete) {
       items.push(Button.component({ className: 'Button Button--danger', icon: 'fas fa-trash', onclick: () => this.remove() }, t('delete')));
@@ -180,7 +223,10 @@ export default class ProjectPage extends Page {
     p.liked = !wasLiked;
     p.likesCount += wasLiked ? -1 : 1;
     likeProject(p.id)
-      .then((res) => { this.project = res.data; m.redraw(); })
+      .then((res) => {
+        this.project = res.data;
+        m.redraw();
+      })
       .catch(() => {
         p.liked = wasLiked;
         p.likesCount += wasLiked ? 1 : -1;
@@ -198,8 +244,15 @@ export default class ProjectPage extends Page {
     p.isFeatured = !was;
     m.redraw();
     featureProject(p.id)
-      .then((res) => { this.project = res.data; m.redraw(); })
-      .catch(() => { p.isFeatured = was; m.redraw(); app.alerts.show({ type: 'error' }, t('like_error')); });
+      .then((res) => {
+        this.project = res.data;
+        m.redraw();
+      })
+      .catch(() => {
+        p.isFeatured = was;
+        m.redraw();
+        app.alerts.show({ type: 'error' }, t('like_error'));
+      });
   }
 
   moderate(action: 'approve' | 'reject') {
@@ -208,7 +261,10 @@ export default class ProjectPage extends Page {
     if (action === 'reject') {
       reason = (window.prompt(t('moderate.reason_prompt') as unknown as string) as string) || '';
     }
-    moderateProject(this.project.id, action, reason).then((res) => { this.project = res.data; m.redraw(); });
+    moderateProject(this.project.id, action, reason).then((res) => {
+      this.project = res.data;
+      m.redraw();
+    });
   }
 
   remove() {
