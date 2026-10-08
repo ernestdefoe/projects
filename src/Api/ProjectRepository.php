@@ -40,7 +40,7 @@ class ProjectRepository
             // the retry hit "current transaction is aborted" and creating any
             // project whose title was already taken failed outright there.
             $baseSlug = $project->slug;
-            for ($attempt = 0; ; $attempt++) {
+            for ($attempt = 0;; $attempt++) {
                 try {
                     $this->db->transaction(fn () => $project->save());
                     break;

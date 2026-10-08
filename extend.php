@@ -91,5 +91,5 @@ return [
     // ---- Register the project as a JSON:API resource type (no endpoints; the
     //      custom controllers own the HTTP API) so it's observable/extendable
     //      by other extensions and usable as a relationship. -------------------
-    (new Extend\ApiResource(Resource\ProjectResource::class)),
+    new Extend\ApiResource(Resource\ProjectResource::class),
 ];
