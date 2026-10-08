@@ -33,11 +33,16 @@ class ProjectRepository
             $this->input->apply($project, $attrs, true);
             $project->status = $canPublish ? Project::STATUS_PUBLISHED : Project::STATUS_PENDING;
 
-            // Retry on a slug collision (concurrent create of the same title).
+            // Retry on a slug collision (another project with the same title).
+            //
+            // Each attempt runs in its own savepoint. PostgreSQL aborts the
+            // whole transaction on the first failed statement, so without one
+            // the retry hit "current transaction is aborted" and creating any
+            // project whose title was already taken failed outright there.
             $baseSlug = $project->slug;
             for ($attempt = 0; ; $attempt++) {
                 try {
-                    $project->save();
+                    $this->db->transaction(fn () => $project->save());
                     break;
                 } catch (UniqueConstraintViolationException $e) {
                     if ($attempt >= 3) {
