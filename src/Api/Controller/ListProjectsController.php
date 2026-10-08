@@ -36,9 +36,14 @@ class ListProjectsController implements RequestHandlerInterface
 
         // Free-text search across title + excerpt.
         if ($q = trim((string) Arr::get($params, 'q', ''))) {
-            $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $q) . '%';
-            $query->where(function (Builder $sub) use ($like) {
-                $sub->where('title', 'like', $like)->orWhere('excerpt', 'like', $like);
+            $like = '%' . addcslashes($q, '%_\\') . '%';
+            // The ESCAPE clause is spelled out because only MySQL and Postgres
+            // treat a backslash as LIKE's escape character by default; on
+            // SQLite a search containing % or _ otherwise matched nothing.
+            $grammar = $query->getQuery()->getGrammar();
+            $query->where(function (Builder $sub) use ($like, $grammar) {
+                $sub->whereRaw($grammar->wrap('title').' like ? escape ?', [$like, '\\'])
+                    ->orWhereRaw($grammar->wrap('excerpt').' like ? escape ?', [$like, '\\']);
             });
         }
 
