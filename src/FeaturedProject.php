@@ -48,8 +48,8 @@ class FeaturedProject
         }
 
         // Avoid a redundant write (and the user-saved events it fires).
-        if ($user->projects_featured !== $snapshot) {
-            $user->projects_featured = $snapshot;
+        if ($user->getAttribute('projects_featured') !== $snapshot) {
+            $user->setAttribute('projects_featured', $snapshot);
             $user->save();
         }
     }

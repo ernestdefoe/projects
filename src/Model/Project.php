@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $rejection_reason
  * @property bool $made_with_ai
  * @property int $likes_count
+ * @property bool $is_featured
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
@@ -63,41 +64,49 @@ class Project extends AbstractModel
         static::deleted(fn (Project $project) => \ErnestDefoe\Projects\FeaturedProject::refresh($project->user_id));
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /** @return BelongsTo<ProjectCategory, $this> */
     public function primaryCategory(): BelongsTo
     {
         return $this->belongsTo(ProjectCategory::class, 'primary_category_id');
     }
 
+    /** @return BelongsToMany<ProjectCategory, $this> */
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(ProjectCategory::class, 'project_category', 'project_id', 'category_id');
     }
 
+    /** @return BelongsTo<Discussion, $this> */
     public function discussion(): BelongsTo
     {
         return $this->belongsTo(Discussion::class, 'discussion_id');
     }
 
+    /** @return HasMany<ProjectFieldValue, $this> */
     public function fieldValues(): HasMany
     {
         return $this->hasMany(ProjectFieldValue::class, 'project_id');
     }
 
+    /** @return HasMany<ProjectLink, $this> */
     public function links(): HasMany
     {
         return $this->hasMany(ProjectLink::class, 'project_id');
     }
 
+    /** @return HasMany<ProjectAuthor, $this> */
     public function coAuthors(): HasMany
     {
         return $this->hasMany(ProjectAuthor::class, 'project_id');
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function likes(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'project_likes', 'project_id', 'user_id');

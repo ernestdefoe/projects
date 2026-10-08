@@ -3,6 +3,7 @@
 namespace ErnestDefoe\Projects\Api;
 
 use ErnestDefoe\Projects\Model\Project;
+use ErnestDefoe\Projects\Model\ProjectCategory;
 use Flarum\Formatter\Formatter;
 use Flarum\User\User;
 use Psr\Http\Message\ServerRequestInterface;
@@ -101,7 +102,8 @@ class ProjectSerializer
             ->all();
     }
 
-    private static function category($category): ?array
+    /** @return array<string, mixed>|null */
+    private static function category(?ProjectCategory $category): ?array
     {
         if (! $category) {
             return null;

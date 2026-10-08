@@ -27,11 +27,13 @@ class ProjectLink extends AbstractModel
         'updated_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
 
+    /** @return BelongsTo<ProjectButton, $this> */
     public function button(): BelongsTo
     {
         return $this->belongsTo(ProjectButton::class, 'button_id');

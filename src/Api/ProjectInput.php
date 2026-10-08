@@ -247,16 +247,22 @@ class ProjectInput
         }
     }
 
-    /** A field/button applies if it has no category restriction, or one of its
-     *  categories is among the project's categories. */
-    private static function appliesTo($categoryIds, array $projectCatIds): bool
+    /**
+     * A field/button applies if it has no category restriction, or one of its
+     * categories is among the project's categories.
+     *
+     * @param array<int>|null $categoryIds
+     * @param array<int> $projectCatIds
+     */
+    private static function appliesTo(?array $categoryIds, array $projectCatIds): bool
     {
         $cats = array_map('intval', (array) ($categoryIds ?? []));
 
         return empty($cats) || count(array_intersect($cats, $projectCatIds)) > 0;
     }
 
-    private function normaliseFieldValue(ProjectField $field, $raw, array &$errors)
+    /** @param array<string, string> $errors */
+    private function normaliseFieldValue(ProjectField $field, mixed $raw, array &$errors): ?string
     {
         if ($raw === null) {
             return null;

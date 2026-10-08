@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $key
  * @property string|null $icon
  * @property array|null $allowed_domains
+ * @property array<int>|null $category_ids
  * @property bool $allow_custom_label
  * @property bool $is_required
  * @property bool $is_primary
@@ -38,6 +39,7 @@ class ProjectButton extends AbstractModel
         'allow_custom_label' => true,
     ];
 
+    /** @return HasMany<ProjectLink, $this> */
     public function links(): HasMany
     {
         return $this->hasMany(ProjectLink::class, 'button_id');

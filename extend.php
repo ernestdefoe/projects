@@ -79,8 +79,8 @@ return [
         ->fields(fn () => [
             Schema\Arr::make('projectFeatured')
                 ->nullable()
-                ->get(fn (User $user) => $user->projects_featured
-                    ? json_decode($user->projects_featured, true)
+                ->get(fn (User $user) => $user->getAttribute('projects_featured')
+                    ? json_decode($user->getAttribute('projects_featured'), true)
                     : null),
         ]),
 

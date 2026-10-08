@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $key
  * @property string $type
  * @property array|null $options
+ * @property array<int>|null $category_ids
  * @property string|null $icon
  * @property string|null $prefix
  * @property string|null $suffix
@@ -43,6 +44,7 @@ class ProjectField extends AbstractModel
         'on_card' => true,
     ];
 
+    /** @return HasMany<ProjectFieldValue, $this> */
     public function values(): HasMany
     {
         return $this->hasMany(ProjectFieldValue::class, 'field_id');

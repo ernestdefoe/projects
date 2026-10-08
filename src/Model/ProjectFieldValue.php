@@ -24,11 +24,13 @@ class ProjectFieldValue extends AbstractModel
         'updated_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
 
+    /** @return BelongsTo<ProjectField, $this> */
     public function field(): BelongsTo
     {
         return $this->belongsTo(ProjectField::class, 'field_id');

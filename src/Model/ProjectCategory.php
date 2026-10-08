@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string|null $icon
  * @property string|null $color
  * @property string|null $description
+ * @property int|null $badge_id
  * @property int $position
  */
 class ProjectCategory extends AbstractModel
@@ -32,6 +33,7 @@ class ProjectCategory extends AbstractModel
         'color' => '#5b3df5',
     ];
 
+    /** @return BelongsToMany<Project, $this> */
     public function projects(): BelongsToMany
     {
         return $this->belongsToMany(Project::class, 'project_category', 'category_id', 'project_id');
