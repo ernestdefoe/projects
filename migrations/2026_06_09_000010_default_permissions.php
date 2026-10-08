@@ -26,7 +26,7 @@ return [
 
             if (! $exists) {
                 $db->table('group_permission')->insert([
-                    'group_id'   => $groupId,
+                    'group_id' => $groupId,
                     'permission' => $permission,
                 ]);
             }

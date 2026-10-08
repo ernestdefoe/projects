@@ -23,8 +23,8 @@ class UploadImageController implements RequestHandlerInterface
     private const DEFAULT_MAX_MB = 4;
     private const MIME_EXT = [
         'image/jpeg' => 'jpg',
-        'image/png'  => 'png',
-        'image/gif'  => 'gif',
+        'image/png' => 'png',
+        'image/gif' => 'gif',
         'image/webp' => 'webp',
     ];
 
@@ -45,7 +45,7 @@ class UploadImageController implements RequestHandlerInterface
 
     private function t(string $key, array $params = []): string
     {
-        return $this->translator->trans('ernestdefoe-projects.api.' . $key, $params);
+        return $this->translator->trans('ernestdefoe-projects.api.'.$key, $params);
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -80,7 +80,7 @@ class UploadImageController implements RequestHandlerInterface
         }
 
         $disk = $this->filesystem->disk('flarum-assets');
-        $name = 'projects/' . date('Y/m') . '/' . Str::random(24) . '.' . self::MIME_EXT[$mime];
+        $name = 'projects/'.date('Y/m').'/'.Str::random(24).'.'.self::MIME_EXT[$mime];
 
         $disk->put($name, $contents, 'public');
 

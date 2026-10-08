@@ -47,9 +47,9 @@ class DefinitionSerializer
     {
         return [
             'categories' => self::categories(),
-            'fields'     => self::fields(),
-            'buttons'    => self::buttons(),
-            'badges'     => self::badges(),
+            'fields' => self::fields(),
+            'buttons' => self::buttons(),
+            'badges' => self::badges(),
         ];
     }
 
@@ -57,7 +57,7 @@ class DefinitionSerializer
      * The available FoF badges (id + name), so the admin picks a badge from a
      * list instead of hunting for a numeric ID nothing surfaces. Empty when
      * fof/badges isn't installed. (Badge names are public in fof/badges, so
-     * shipping them in the shared config leaks nothing.)
+     * shipping them in the shared config leaks nothing.).
      */
     public static function badges(): array
     {
@@ -94,49 +94,49 @@ class DefinitionSerializer
     public static function category(ProjectCategory $c): array
     {
         return [
-            'id'          => (int) $c->id,
-            'name'        => $c->name,
-            'slug'        => $c->slug,
-            'icon'        => $c->icon,
-            'color'       => $c->color,
+            'id' => (int) $c->id,
+            'name' => $c->name,
+            'slug' => $c->slug,
+            'icon' => $c->icon,
+            'color' => $c->color,
             'description' => $c->description,
-            'badgeId'     => $c->badge_id ? (int) $c->badge_id : null,
-            'position'    => (int) $c->position,
+            'badgeId' => $c->badge_id ? (int) $c->badge_id : null,
+            'position' => (int) $c->position,
         ];
     }
 
     public static function field(ProjectField $f): array
     {
         return [
-            'id'         => (int) $f->id,
-            'name'       => $f->name,
+            'id' => (int) $f->id,
+            'name' => $f->name,
             'description' => $f->description,
-            'key'        => $f->key,
-            'type'       => $f->type,
-            'options'    => array_values((array) ($f->options ?? [])),
-            'icon'       => $f->icon,
-            'prefix'     => $f->prefix,
-            'suffix'     => $f->suffix,
+            'key' => $f->key,
+            'type' => $f->type,
+            'options' => array_values((array) ($f->options ?? [])),
+            'icon' => $f->icon,
+            'prefix' => $f->prefix,
+            'suffix' => $f->suffix,
             'isRequired' => (bool) $f->is_required,
-            'onCard'     => (bool) $f->on_card,
+            'onCard' => (bool) $f->on_card,
             'categoryIds' => array_values(array_map('intval', (array) ($f->category_ids ?? []))),
-            'position'   => (int) $f->position,
+            'position' => (int) $f->position,
         ];
     }
 
     public static function button(ProjectButton $b): array
     {
         return [
-            'id'               => (int) $b->id,
-            'label'            => $b->label,
-            'key'              => $b->key,
-            'icon'             => $b->icon,
-            'allowedDomains'   => array_values((array) ($b->allowed_domains ?? [])),
+            'id' => (int) $b->id,
+            'label' => $b->label,
+            'key' => $b->key,
+            'icon' => $b->icon,
+            'allowedDomains' => array_values((array) ($b->allowed_domains ?? [])),
             'allowCustomLabel' => (bool) $b->allow_custom_label,
-            'isRequired'       => (bool) $b->is_required,
-            'isPrimary'        => (bool) $b->is_primary,
-            'categoryIds'      => array_values(array_map('intval', (array) ($b->category_ids ?? []))),
-            'position'         => (int) $b->position,
+            'isRequired' => (bool) $b->is_required,
+            'isPrimary' => (bool) $b->is_primary,
+            'categoryIds' => array_values(array_map('intval', (array) ($b->category_ids ?? []))),
+            'position' => (int) $b->position,
         ];
     }
 }

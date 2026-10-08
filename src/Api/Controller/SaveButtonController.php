@@ -47,7 +47,8 @@ class SaveButtonController implements RequestHandlerInterface
                 if ($d === '') {
                     return null;
                 }
-                $host = parse_url(str_contains($d, '://') ? $d : 'https://' . $d, PHP_URL_HOST);
+                $host = parse_url(str_contains($d, '://') ? $d : 'https://'.$d, PHP_URL_HOST);
+
                 return strtolower(ltrim((string) ($host ?: $d), '.'));
             })
             ->filter()
@@ -77,7 +78,7 @@ class SaveButtonController implements RequestHandlerInterface
         $key = $base;
         $i = 2;
         while (ProjectButton::query()->where('key', $key)->exists()) {
-            $key = $base . '_' . $i++;
+            $key = $base.'_'.$i++;
         }
 
         return $key;

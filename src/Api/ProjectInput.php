@@ -33,7 +33,7 @@ class ProjectInput
     /** Translate an api.* error message in the actor's locale. */
     private function t(string $key, array $params = []): string
     {
-        return $this->translator->trans('ernestdefoe-projects.api.' . $key, $params);
+        return $this->translator->trans('ernestdefoe-projects.api.'.$key, $params);
     }
 
     /** Apply scalar attributes to the (unsaved or existing) project. */
@@ -131,7 +131,7 @@ class ProjectInput
         // ---- Custom field values ------------------------------------------
         if (array_key_exists('fieldValues', $attrs)) {
             $fields = ProjectField::all()->keyBy('id');
-            $given  = (array) $attrs['fieldValues']; // { fieldId: value }
+            $given = (array) $attrs['fieldValues']; // { fieldId: value }
 
             // Load every existing value row for this project up front (one query)
             // instead of querying per field — avoids the 2N+1 on save.
@@ -155,7 +155,7 @@ class ProjectInput
 
                 if ($value === null || $value === '') {
                     if ($field->is_required) {
-                        $errors['field_' . $field->key] = $this->t('field_required', ['{field}' => $field->name]);
+                        $errors['field_'.$field->key] = $this->t('field_required', ['{field}' => $field->name]);
                     }
                     $existing?->delete();
                     continue;
@@ -170,7 +170,7 @@ class ProjectInput
         // ---- Links ---------------------------------------------------------
         if (array_key_exists('links', $attrs)) {
             $buttons = ProjectButton::all()->keyBy('id');
-            $given   = array_values((array) $attrs['links']);
+            $given = array_values((array) $attrs['links']);
             $seenButtons = [];
 
             $project->links()->delete();
@@ -181,14 +181,14 @@ class ProjectInput
                     continue;
                 }
                 if (! self::isSafeUrl($url)) {
-                    $errors['link_' . $position] = $this->t('link_invalid');
+                    $errors['link_'.$position] = $this->t('link_invalid');
                     continue;
                 }
 
                 $buttonId = (int) Arr::get($entry, 'buttonId', 0);
                 $button = $buttonId ? $buttons->get($buttonId) : null;
                 if ($button && ! $button->allowsUrl($url)) {
-                    $errors['link_' . $button->key] = $this->t('link_domain', ['{button}' => $button->label]);
+                    $errors['link_'.$button->key] = $this->t('link_domain', ['{button}' => $button->label]);
                     continue;
                 }
 
@@ -199,10 +199,10 @@ class ProjectInput
 
                 ProjectLink::create([
                     'project_id' => $project->id,
-                    'button_id'  => $button?->id,
-                    'url'        => $url,
-                    'label'      => $label !== '' ? $label : null,
-                    'position'   => $position++,
+                    'button_id' => $button?->id,
+                    'url' => $url,
+                    'label' => $label !== '' ? $label : null,
+                    'position' => $position++,
                 ]);
 
                 if ($button) {
@@ -214,7 +214,7 @@ class ProjectInput
             // project's categories.
             foreach ($buttons as $button) {
                 if ($button->is_required && empty($seenButtons[$button->id]) && self::appliesTo($button->category_ids, $projectCatIds)) {
-                    $errors['link_' . $button->key] = $this->t('link_required', ['{button}' => $button->label]);
+                    $errors['link_'.$button->key] = $this->t('link_required', ['{button}' => $button->label]);
                 }
             }
         }
@@ -235,9 +235,9 @@ class ProjectInput
                 $user = User::query()->where('username', $name)->first();
                 ProjectAuthor::create([
                     'project_id' => $project->id,
-                    'user_id'    => $user?->id,
-                    'name'       => $user ? null : mb_substr($name, 0, 80),
-                    'position'   => $position++,
+                    'user_id' => $user?->id,
+                    'name' => $user ? null : mb_substr($name, 0, 80),
+                    'position' => $position++,
                 ]);
             }
         }
@@ -273,39 +273,56 @@ class ProjectInput
                 return filter_var($raw, FILTER_VALIDATE_BOOLEAN) ? '1' : null;
             case 'number':
                 $raw = trim((string) $raw);
-                if ($raw === '') return null;
-                if (! is_numeric($raw)) {
-                    $errors['field_' . $field->key] = $this->t('field_number', ['{field}' => $field->name]);
+                if ($raw === '') {
                     return null;
                 }
+                if (! is_numeric($raw)) {
+                    $errors['field_'.$field->key] = $this->t('field_number', ['{field}' => $field->name]);
+
+                    return null;
+                }
+
                 return $raw;
             case 'date':
                 $raw = trim((string) $raw);
-                if ($raw === '') return null;
-                if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw)) {
-                    $errors['field_' . $field->key] = $this->t('field_date', ['{field}' => $field->name]);
+                if ($raw === '') {
                     return null;
                 }
+                if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw)) {
+                    $errors['field_'.$field->key] = $this->t('field_date', ['{field}' => $field->name]);
+
+                    return null;
+                }
+
                 return $raw;
             case 'url':
                 $raw = trim((string) $raw);
-                if ($raw === '') return null;
-                if (! self::isSafeUrl($raw)) {
-                    $errors['field_' . $field->key] = $this->t('field_url', ['{field}' => $field->name]);
+                if ($raw === '') {
                     return null;
                 }
+                if (! self::isSafeUrl($raw)) {
+                    $errors['field_'.$field->key] = $this->t('field_url', ['{field}' => $field->name]);
+
+                    return null;
+                }
+
                 return $raw;
             case 'select':
                 $raw = trim((string) $raw);
-                if ($raw === '') return null;
-                $options = array_map('strval', (array) ($field->options ?? []));
-                if ($options && ! in_array($raw, $options, true)) {
-                    $errors['field_' . $field->key] = $this->t('field_choice', ['{field}' => $field->name]);
+                if ($raw === '') {
                     return null;
                 }
+                $options = array_map('strval', (array) ($field->options ?? []));
+                if ($options && ! in_array($raw, $options, true)) {
+                    $errors['field_'.$field->key] = $this->t('field_choice', ['{field}' => $field->name]);
+
+                    return null;
+                }
+
                 return $raw;
             default: // text, textarea
                 $raw = trim((string) $raw);
+
                 return $raw !== '' ? mb_substr($raw, 0, 2000) : null;
         }
     }

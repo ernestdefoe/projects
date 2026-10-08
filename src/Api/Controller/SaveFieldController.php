@@ -71,7 +71,7 @@ class SaveFieldController implements RequestHandlerInterface
         $key = $base;
         $i = 2;
         while (ProjectField::query()->where('key', $key)->exists()) {
-            $key = $base . '_' . $i++;
+            $key = $base.'_'.$i++;
         }
 
         return $key;

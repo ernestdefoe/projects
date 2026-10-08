@@ -36,7 +36,7 @@ class ListProjectsController implements RequestHandlerInterface
 
         // Free-text search across title + excerpt.
         if ($q = trim((string) Arr::get($params, 'q', ''))) {
-            $like = '%' . addcslashes($q, '%_\\') . '%';
+            $like = '%'.addcslashes($q, '%_\\').'%';
             // The ESCAPE clause is spelled out because only MySQL and Postgres
             // treat a backslash as LIKE's escape character by default; on
             // SQLite a search containing % or _ otherwise matched nothing.
@@ -98,10 +98,10 @@ class ListProjectsController implements RequestHandlerInterface
         return new JsonResponse([
             'data' => $data,
             'meta' => [
-                'total'    => $total,
-                'page'     => $page,
-                'perPage'  => $perPage,
-                'hasMore'  => ($page * $perPage) < $total,
+                'total' => $total,
+                'page' => $page,
+                'perPage' => $perPage,
+                'hasMore' => ($page * $perPage) < $total,
             ],
         ]);
     }

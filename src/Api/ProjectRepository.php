@@ -48,7 +48,7 @@ class ProjectRepository
                     if ($attempt >= 3) {
                         throw $e;
                     }
-                    $project->slug = $baseSlug . '-' . Str::lower(Str::random(5));
+                    $project->slug = $baseSlug.'-'.Str::lower(Str::random(5));
                 }
             }
 

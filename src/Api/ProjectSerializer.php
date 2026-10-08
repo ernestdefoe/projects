@@ -27,42 +27,42 @@ class ProjectSerializer
         $author = null;
         if ($project->relationLoaded('user') && $project->user) {
             $author = [
-                'id'          => (int) $project->user->id,
-                'username'    => $project->user->username,
+                'id' => (int) $project->user->id,
+                'username' => $project->user->username,
                 'displayName' => $project->user->display_name ?: $project->user->username,
-                'avatarUrl'   => $project->user->avatar_url,
-                'slug'        => $project->user->slug ?? (string) $project->user->id,
+                'avatarUrl' => $project->user->avatar_url,
+                'slug' => $project->user->slug ?? (string) $project->user->id,
             ];
         }
 
         $data = [
-            'id'              => (int) $project->id,
-            'title'           => $project->title,
-            'slug'            => $project->slug,
-            'excerpt'         => $project->excerpt,
-            'image'           => $project->image_path,
-            'status'          => $project->status,
+            'id' => (int) $project->id,
+            'title' => $project->title,
+            'slug' => $project->slug,
+            'excerpt' => $project->excerpt,
+            'image' => $project->image_path,
+            'status' => $project->status,
             'rejectionReason' => $project->rejection_reason,
-            'likesCount'      => (int) $project->likes_count,
-            'liked'           => self::liked($project, $actor),
-            'createdAt'       => optional($project->created_at)->toIso8601String(),
-            'updatedAt'       => optional($project->updated_at)->toIso8601String(),
-            'author'          => $author,
-            'coAuthors'       => self::coAuthors($project),
+            'likesCount' => (int) $project->likes_count,
+            'liked' => self::liked($project, $actor),
+            'createdAt' => optional($project->created_at)->toIso8601String(),
+            'updatedAt' => optional($project->updated_at)->toIso8601String(),
+            'author' => $author,
+            'coAuthors' => self::coAuthors($project),
             'primaryCategory' => self::category($project->relationLoaded('primaryCategory') ? $project->primaryCategory : null),
-            'categories'      => $project->relationLoaded('categories')
+            'categories' => $project->relationLoaded('categories')
                 ? $project->categories->map(fn ($c) => self::category($c))->filter()->values()->all()
                 : [],
-            'fields'          => self::fields($project),
-            'links'           => self::links($project),
-            'discussionId'    => $project->discussion_id ? (int) $project->discussion_id : null,
-            'canEdit'         => self::canEdit($project, $actor),
-            'canDelete'       => self::canDelete($project, $actor),
-            'canModerate'     => $actor && ! $actor->isGuest()
+            'fields' => self::fields($project),
+            'links' => self::links($project),
+            'discussionId' => $project->discussion_id ? (int) $project->discussion_id : null,
+            'canEdit' => self::canEdit($project, $actor),
+            'canDelete' => self::canDelete($project, $actor),
+            'canModerate' => $actor && ! $actor->isGuest()
                 && ($actor->isAdmin() || $actor->hasPermission('projects.moderate')),
-            'isFeatured'      => (bool) $project->is_featured,
-            'canFeature'      => self::canFeature($project, $actor),
-            'madeWithAi'      => (bool) $project->made_with_ai,
+            'isFeatured' => (bool) $project->is_featured,
+            'canFeature' => self::canFeature($project, $actor),
+            'madeWithAi' => (bool) $project->made_with_ai,
         ];
 
         if ($full) {
@@ -87,11 +87,11 @@ class ProjectSerializer
                     $u = $a->user;
 
                     return [
-                        'userId'      => (int) $u->id,
-                        'username'    => $u->username,
+                        'userId' => (int) $u->id,
+                        'username' => $u->username,
                         'displayName' => $u->display_name ?: $u->username,
-                        'avatarUrl'   => $u->avatar_url,
-                        'slug'        => $u->slug ?? (string) $u->id,
+                        'avatarUrl' => $u->avatar_url,
+                        'slug' => $u->slug ?? (string) $u->id,
                     ];
                 }
 
@@ -110,10 +110,10 @@ class ProjectSerializer
         }
 
         return [
-            'id'    => (int) $category->id,
-            'name'  => $category->name,
-            'slug'  => $category->slug,
-            'icon'  => $category->icon,
+            'id' => (int) $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'icon' => $category->icon,
             'color' => $category->color,
         ];
     }
@@ -128,15 +128,15 @@ class ProjectSerializer
             ->filter(fn ($v) => $v->relationLoaded('field') && $v->field !== null && $v->value !== null && $v->value !== '')
             ->sortBy(fn ($v) => $v->field->position)
             ->map(fn ($v) => [
-                'id'     => (int) $v->field->id,
-                'key'    => $v->field->key,
-                'name'   => $v->field->name,
-                'type'   => $v->field->type,
-                'icon'   => $v->field->icon,
+                'id' => (int) $v->field->id,
+                'key' => $v->field->key,
+                'name' => $v->field->name,
+                'type' => $v->field->type,
+                'icon' => $v->field->icon,
                 'prefix' => $v->field->prefix,
                 'suffix' => $v->field->suffix,
                 'onCard' => (bool) $v->field->on_card,
-                'value'  => $v->value,
+                'value' => $v->value,
             ])
             ->values()
             ->all();
@@ -154,11 +154,11 @@ class ProjectSerializer
                 $button = $link->relationLoaded('button') ? $link->button : null;
 
                 return [
-                    'id'        => (int) $link->id,
-                    'buttonId'  => $link->button_id ? (int) $link->button_id : null,
-                    'url'       => $link->url,
-                    'label'     => $link->label ?: ($button ? $button->label : $link->url),
-                    'icon'      => $button ? $button->icon : null,
+                    'id' => (int) $link->id,
+                    'buttonId' => $link->button_id ? (int) $link->button_id : null,
+                    'url' => $link->url,
+                    'label' => $link->label ?: ($button ? $button->label : $link->url),
+                    'icon' => $button ? $button->icon : null,
                     'isPrimary' => $button ? (bool) $button->is_primary : false,
                 ];
             })
@@ -179,7 +179,7 @@ class ProjectSerializer
             return $this->formatter->render($xml, $project, $request);
         } catch (\Throwable $e) {
             // Defensive fallback — never let a formatting hiccup 500 the detail page.
-            return '<p>' . nl2br(htmlspecialchars($content, ENT_QUOTES)) . '</p>';
+            return '<p>'.nl2br(htmlspecialchars($content, ENT_QUOTES)).'</p>';
         }
     }
 

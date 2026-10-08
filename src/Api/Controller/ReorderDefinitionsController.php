@@ -27,8 +27,8 @@ class ReorderDefinitionsController implements RequestHandlerInterface
 {
     private const MODELS = [
         'categories' => ProjectCategory::class,
-        'fields'     => ProjectField::class,
-        'buttons'    => ProjectButton::class,
+        'fields' => ProjectField::class,
+        'buttons' => ProjectButton::class,
     ];
 
     public function handle(ServerRequestInterface $request): ResponseInterface

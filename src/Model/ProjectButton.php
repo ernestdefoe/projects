@@ -25,14 +25,14 @@ class ProjectButton extends AbstractModel
     protected $table = 'project_buttons';
 
     protected $casts = [
-        'allowed_domains'    => 'array',
-        'category_ids'       => 'array',
+        'allowed_domains' => 'array',
+        'category_ids' => 'array',
         'allow_custom_label' => 'boolean',
-        'is_required'        => 'boolean',
-        'is_primary'         => 'boolean',
-        'position'           => 'integer',
-        'created_at'         => 'datetime',
-        'updated_at'         => 'datetime',
+        'is_required' => 'boolean',
+        'is_primary' => 'boolean',
+        'position' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected $attributes = [
@@ -63,7 +63,7 @@ class ProjectButton extends AbstractModel
 
         foreach ($domains as $domain) {
             $domain = strtolower(ltrim(trim((string) $domain), '.'));
-            if ($domain !== '' && ($host === $domain || str_ends_with($host, '.' . $domain))) {
+            if ($domain !== '' && ($host === $domain || str_ends_with($host, '.'.$domain))) {
                 return true;
             }
         }

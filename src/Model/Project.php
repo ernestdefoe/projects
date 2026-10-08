@@ -40,16 +40,16 @@ class Project extends AbstractModel
     protected $table = 'projects';
 
     protected $casts = [
-        'likes_count'  => 'integer',
-        'is_featured'  => 'boolean',
+        'likes_count' => 'integer',
+        'is_featured' => 'boolean',
         'made_with_ai' => 'boolean',
-        'created_at'   => 'datetime',
-        'updated_at'   => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected $attributes = [
-        'status'       => self::STATUS_PENDING,
-        'likes_count'  => 0,
+        'status' => self::STATUS_PENDING,
+        'likes_count' => 0,
         'made_with_ai' => false,
     ];
 

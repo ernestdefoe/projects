@@ -22,7 +22,7 @@ class ProjectLink extends AbstractModel
     protected $guarded = [];
 
     protected $casts = [
-        'position'   => 'integer',
+        'position' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

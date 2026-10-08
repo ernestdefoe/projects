@@ -23,8 +23,8 @@ class ProjectCategory extends AbstractModel
     protected $table = 'project_categories';
 
     protected $casts = [
-        'position'   => 'integer',
-        'badge_id'   => 'integer',
+        'position' => 'integer',
+        'badge_id' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -38,11 +38,11 @@ class FeaturedProject
         if ($project) {
             $category = $project->primaryCategory;
             $snapshot = json_encode([
-                'id'           => (int) $project->id,
-                'title'        => $project->title,
-                'slug'         => $project->slug,
-                'icon'         => $category?->icon,
-                'color'        => $category?->color,
+                'id' => (int) $project->id,
+                'title' => $project->title,
+                'slug' => $project->slug,
+                'icon' => $category?->icon,
+                'color' => $category?->color,
                 'categoryName' => $category?->name,
             ]);
         }

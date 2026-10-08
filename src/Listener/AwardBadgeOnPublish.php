@@ -79,7 +79,7 @@ class AwardBadgeOnPublish
             }
             $badge->users()->attach($userId, ['earned_at' => \Carbon\Carbon::now()]);
         } catch (\Throwable $e) {
-            $this->log->warning('[projects] failed to award badge ' . $badgeId . ': ' . $e->getMessage());
+            $this->log->warning('[projects] failed to award badge '.$badgeId.': '.$e->getMessage());
         }
     }
 }
