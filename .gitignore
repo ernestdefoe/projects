@@ -5,3 +5,4 @@ composer.lock
 *.log
 .phpunit.result.cache
 /tests/integration/tmp
+js/coverage-ts/
