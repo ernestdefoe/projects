@@ -6,10 +6,10 @@ export interface ProjectCategory {
   slug: string;
   icon?: string | null;
   color?: string | null;
+  description?: string | null;
 }
 
 export interface CategoryDef extends ProjectCategory {
-  description?: string | null;
   badgeId?: number | null;
   position: number;
 }

@@ -1,5 +1,5 @@
 import app from 'flarum/forum/app';
-import Modal from 'flarum/common/components/Modal';
+import Modal, { type IInternalModalAttrs } from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
 import Switch from 'flarum/common/components/Switch';
 import StyledSelect from './StyledSelect';
@@ -10,12 +10,17 @@ import { config, getProject, saveProject, uploadImage, type ButtonDef, type Fiel
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.forum.' + k, p);
 
+export interface ProjectFormModalAttrs extends IInternalModalAttrs {
+  project?: Project;
+  onsave?: (project: Project) => void;
+}
+
 /**
  * Create / edit a project. The form is driven entirely by the admin-defined
  * config (categories, custom fields, button slots) shipped in the boot payload,
  * so it adapts to whatever a community has set up.
  */
-export default class ProjectFormModal extends Modal {
+export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
   cfg = config();
   editing: Project | null = null;
 
@@ -121,7 +126,7 @@ export default class ProjectFormModal extends Modal {
           value: this.excerpt,
           oninput: (e: any) => (this.excerpt = e.target.value),
         }),
-        m('span.helpText', t('form.excerpt_help', { count: (app.forum.attribute('projectsExcerptLimit') || 280) - this.excerpt.length })),
+        m('span.helpText', t('form.excerpt_help', { count: (Number(app.forum.attribute('projectsExcerptLimit')) || 280) - this.excerpt.length })),
       ]),
 
       m('.Form-group.ProjectForm-content', [

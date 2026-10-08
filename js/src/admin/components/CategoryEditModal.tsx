@@ -1,12 +1,13 @@
 import app from 'flarum/admin/app';
 import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
+import type { DefinitionModalAttrs } from '../definitionModal';
 import { saveCategory, type CategoryDef } from '../../common/api';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.admin.' + k, p);
 
-export default class CategoryEditModal extends Modal {
+export default class CategoryEditModal extends Modal<DefinitionModalAttrs<CategoryDef>> {
   item: Partial<CategoryDef> = {};
   loading = false;
 

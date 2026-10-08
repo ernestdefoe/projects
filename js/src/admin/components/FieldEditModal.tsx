@@ -1,6 +1,7 @@
 import app from 'flarum/admin/app';
 import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
+import type { DefinitionModalAttrs } from '../definitionModal';
 import Switch from 'flarum/common/components/Switch';
 import { saveField, type FieldDef, type FieldType } from '../../common/api';
 import { categoryRestrictionField } from '../categoryRestriction';
@@ -9,7 +10,7 @@ declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.admin.' + k, p);
 const TYPES: FieldType[] = ['text', 'textarea', 'number', 'date', 'url', 'select', 'boolean'];
 
-export default class FieldEditModal extends Modal {
+export default class FieldEditModal extends Modal<DefinitionModalAttrs<FieldDef>> {
   item: Partial<FieldDef> = {};
   optionsText = '';
   loading = false;

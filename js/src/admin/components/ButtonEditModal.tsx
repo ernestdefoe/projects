@@ -1,6 +1,7 @@
 import app from 'flarum/admin/app';
 import Modal from 'flarum/common/components/Modal';
 import Button from 'flarum/common/components/Button';
+import type { DefinitionModalAttrs } from '../definitionModal';
 import Switch from 'flarum/common/components/Switch';
 import { saveButton, type ButtonDef } from '../../common/api';
 import { categoryRestrictionField } from '../categoryRestriction';
@@ -8,7 +9,7 @@ import { categoryRestrictionField } from '../categoryRestriction';
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.admin.' + k, p);
 
-export default class ButtonEditModal extends Modal {
+export default class ButtonEditModal extends Modal<DefinitionModalAttrs<ButtonDef>> {
   item: Partial<ButtonDef> = {};
   domainsText = '';
   loading = false;

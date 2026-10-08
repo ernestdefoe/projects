@@ -1,10 +1,16 @@
 import app from 'flarum/forum/app';
-import Component from 'flarum/common/Component';
+import Component, { type ComponentAttrs } from 'flarum/common/Component';
 import type { Project } from '../../common/api';
 import { authorAvatar } from '../authorAvatar';
 
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.forum.' + k, p);
+
+export interface ProjectCardAttrs extends ComponentAttrs {
+  project: Project;
+  onLike: (project: Project) => void;
+  onFeature?: (project: Project) => void;
+}
 
 /**
  * A single project card: optional image, category badges, title, author,
@@ -12,7 +18,7 @@ const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-project
  * body navigates to the project detail page; interactive controls stop the
  * click from bubbling.
  */
-export default class ProjectCard extends Component {
+export default class ProjectCard extends Component<ProjectCardAttrs> {
   excerptExpanded = false;
 
   view() {
@@ -90,7 +96,7 @@ export default class ProjectCard extends Component {
             ? m('button.ProjectCard-feature' + (p.isFeatured ? '.is-featured' : ''), {
                 type: 'button',
                 title: p.isFeatured ? t('featured') : t('feature'),
-                onclick: (e: Event) => { e.stopPropagation(); this.attrs.onFeature(p); },
+                onclick: (e: Event) => { e.stopPropagation(); this.attrs.onFeature?.(p); },
               }, m('i', { className: (p.isFeatured ? 'fas' : 'far') + ' fa-star' }))
             : null,
           m('button.ProjectCard-like' + (p.liked ? '.is-liked' : ''), {
