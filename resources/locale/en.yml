@@ -21,6 +21,7 @@ ernestdefoe-projects:
     upload_type: "Only JPG, PNG, GIF or WebP images are allowed."
     categories_min: "Please choose at least {min} tags."
     categories_max: "Please choose at most {max} tags."
+    unknown_kind: Unknown kind
 
   forum:
     nav: "Projects"

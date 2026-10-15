@@ -7,6 +7,7 @@ use ErnestDefoe\Projects\Model\ProjectButton;
 use ErnestDefoe\Projects\Model\ProjectCategory;
 use ErnestDefoe\Projects\Model\ProjectField;
 use Flarum\Http\RequestUtil;
+use Flarum\Locale\TranslatorInterface;
 use Illuminate\Support\Arr;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -25,6 +26,11 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class ReorderDefinitionsController implements RequestHandlerInterface
 {
+    public function __construct(
+        protected TranslatorInterface $translator
+    ) {
+    }
+
     private const MODELS = [
         'categories' => ProjectCategory::class,
         'fields' => ProjectField::class,
@@ -41,7 +47,7 @@ class ReorderDefinitionsController implements RequestHandlerInterface
 
         $model = self::MODELS[$kind] ?? null;
         if (! $model) {
-            return new JsonResponse(['errors' => [['status' => '422', 'detail' => 'Unknown kind']]], 422);
+            return new JsonResponse(['errors' => [['status' => '422', 'detail' => $this->translator->trans('ernestdefoe-projects.api.unknown_kind')]]], 422);
         }
 
         foreach ($ids as $index => $id) {
