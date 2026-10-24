@@ -22,12 +22,24 @@ use Illuminate\Support\Str;
  */
 class ProjectInput
 {
-    private const EXCERPT_MAX = 280;
+    /** Default short-description limit when the admin setting is unset. */
+    public const EXCERPT_DEFAULT = 280;
+
+    /** Hard ceiling: the size of the projects.excerpt column (string 600). */
+    public const EXCERPT_COLUMN_MAX = 600;
 
     public function __construct(
         private TranslatorInterface $translator,
         private SettingsRepositoryInterface $settings,
     ) {
+    }
+
+    /** The admin short-description limit, defaulted and clamped to the column size. */
+    public static function excerptLimit(mixed $value): int
+    {
+        $limit = (int) $value ?: self::EXCERPT_DEFAULT;
+
+        return max(1, min($limit, self::EXCERPT_COLUMN_MAX));
     }
 
     /** Translate an api.* error message in the actor's locale. */
@@ -57,8 +69,9 @@ class ProjectInput
 
         if (array_key_exists('excerpt', $attrs)) {
             $excerpt = trim((string) $attrs['excerpt']);
-            if (mb_strlen($excerpt) > self::EXCERPT_MAX) {
-                $errors['excerpt'] = $this->t('excerpt_max', ['{max}' => self::EXCERPT_MAX]);
+            $max = self::excerptLimit($this->settings->get('ernestdefoe-projects.excerpt_limit'));
+            if (mb_strlen($excerpt) > $max) {
+                $errors['excerpt'] = $this->t('excerpt_max', ['{max}' => $max]);
             }
             $project->excerpt = $excerpt !== '' ? $excerpt : null;
         }

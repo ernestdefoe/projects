@@ -108,7 +108,7 @@ ernestdefoe-projects:
   admin:
     settings:
       excerpt_limit: "Short-description character limit"
-      excerpt_limit_help: "Maximum length of the card description."
+      excerpt_limit_help: "Maximum length of the card description, up to 600 characters."
       allow_adhoc_links: "Allow free-form links"
       allow_adhoc_links_help: "Let authors add links beyond the defined button slots."
       publish_badge_id: "FoF Badges: badge to award on publish"

@@ -61,6 +61,47 @@ class WriteProjectsTest extends ProjectsTestCase
     }
 
     #[Test]
+    public function the_short_description_follows_the_admin_character_limit()
+    {
+        [$status] = $this->api('POST', '/api/projects', 2, ['title' => 'Default', 'excerpt' => str_repeat('a', 281)]);
+        $this->assertSame(422, $status, 'Over the default 280 is refused');
+
+        [$status] = $this->api('POST', '/api/projects', 2, ['title' => 'Default', 'excerpt' => str_repeat('a', 280)]);
+        $this->assertSame(201, $status, 'Exactly the default limit saves');
+    }
+
+    #[Test]
+    public function a_raised_short_description_limit_lets_a_longer_one_save()
+    {
+        $this->setting('ernestdefoe-projects.excerpt_limit', 400);
+
+        [$status, $body] = $this->api('POST', '/api/projects', 2, ['title' => 'Longer', 'excerpt' => str_repeat('b', 350)]);
+        $this->assertSame(201, $status, json_encode($body));
+        $this->assertSame(350, mb_strlen($body['data']['excerpt']));
+
+        [$status] = $this->api('POST', '/api/projects', 2, ['title' => 'Too long', 'excerpt' => str_repeat('b', 401)]);
+        $this->assertSame(422, $status);
+
+        [, $forum] = $this->api('GET', '/api', 2);
+        $this->assertSame(400, $forum['data']['attributes']['projectsExcerptLimit'], 'The composer counter uses the same limit');
+    }
+
+    #[Test]
+    public function the_short_description_limit_never_exceeds_the_column_size()
+    {
+        $this->setting('ernestdefoe-projects.excerpt_limit', 5000);
+
+        [$status] = $this->api('POST', '/api/projects', 2, ['title' => 'Huge', 'excerpt' => str_repeat('c', 601)]);
+        $this->assertSame(422, $status, 'Capped at the 600-character column');
+
+        [$status] = $this->api('POST', '/api/projects', 2, ['title' => 'Max', 'excerpt' => str_repeat('c', 600)]);
+        $this->assertSame(201, $status);
+
+        [, $forum] = $this->api('GET', '/api', 2);
+        $this->assertSame(600, $forum['data']['attributes']['projectsExcerptLimit']);
+    }
+
+    #[Test]
     public function a_button_only_accepts_links_on_its_allowed_domains()
     {
         $this->app();

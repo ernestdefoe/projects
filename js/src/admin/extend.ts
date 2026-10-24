@@ -14,6 +14,8 @@ export default [
       label: t('settings.excerpt_limit'),
       help: t('settings.excerpt_limit_help'),
       default: 280,
+      min: 1,
+      max: 600,
     }))
     .setting(() => ({
       setting: 'ernestdefoe-projects.allow_adhoc_links',
