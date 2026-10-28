@@ -47,6 +47,7 @@ Then open **Admin → Projects** to add categories, custom parameters and button
 
 ## Support
 
+- **Discuss:** [Projects on discuss.flarum.org](https://discuss.flarum.org/d/40243)
 - **Support forum:** [Projects on ernestdefoe.online](https://ernestdefoe.online/d/65)
 - **Bug reports:** [GitHub issues](https://github.com/ernestdefoe/projects/issues)
 
