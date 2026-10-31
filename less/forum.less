@@ -484,21 +484,20 @@
       box-shadow: none;
     }
 
-    // The toolbar is ONE row that scrolls horizontally when the buttons overflow
-    // (narrow modal / lots of tools from other extensions) — exactly like the
-    // composer's own toolbar, instead of wrapping onto extra lines.
+    // The toolbar wraps onto a second row when the buttons don't fit (narrow
+    // modal, phones, tools from other extensions). It must not scroll: a
+    // scrolling row clips the popups its buttons open (an editor's link box,
+    // a style menu), leaving only a sliver showing (Forogramero, Discuss d/40243 #3).
     .TextEditor-controls {
       display: flex;
-      flex-wrap: nowrap;
-      align-items: center;
+      flex-wrap: wrap;
+      align-items: flex-start;
       gap: 6px 4px;
       margin: 0;
       padding: 6px 12px;
       border-top: 1px solid var(--control-bg);
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: thin;
-      -webkit-overflow-scrolling: touch;
+      overflow: visible;
+      white-space: normal;
     }
     // Core bleeds the toolbar out with negative margins to edge-align it in the
     // composer; there's no padding to absorb that here, so it stuck out left.
@@ -508,26 +507,29 @@
     // Every control-bar item (the formatting toolbar AND fof/upload's buttons,
     // which are added via controlItems) sits inline at natural size — no
     // margin-right:auto stretch (that's what stranded the upload icons before),
-    // no shrinking. The whole bar scrolls horizontally instead.
+    // no shrinking.
     .TextEditor-controls > .item { flex: 0 0 auto; margin: 0; }
 
-    // Single-row toolbar: don't wrap, and don't let the buttons squish — they
-    // keep their size and the row scrolls instead.
+    // The buttons keep their size and wrap instead of squishing. The group
+    // takes the rest of the row beside the upload buttons rather than
+    // dropping below them whole.
     .TextEditor-toolbar {
+      flex: 1 1 0;
+      min-width: 0;
       display: flex;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       align-items: center;
       gap: 6px;
 
       .MarkdownToolbar {
         display: flex;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         align-items: center;
         gap: 6px;
       }
 
       // Every tool (and any tool contributed by another extension, e.g. an
-      // upload button) holds its width so nothing collapses in the scroll row.
+      // upload button) holds its width so nothing collapses.
       .item,
       > .Button,
       .MarkdownToolbar .Button { flex: 0 0 auto; }
