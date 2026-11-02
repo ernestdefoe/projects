@@ -39,6 +39,9 @@ class AwardBadgeOnPublish
         // Book -> Writer, Game -> Developer).
         $badgeIds = [(int) $this->settings->get('ernestdefoe-projects.publish_badge_id')];
 
+        // A fresh query on purpose, not the loaded `categories` property: the
+        // edit that publishes may have just re-synced the tags, so a relation
+        // loaded earlier in the request would award the old tags' badges.
         foreach ($event->project->categories()->get() as $category) {
             $badgeIds[] = (int) $category->badge_id;
         }

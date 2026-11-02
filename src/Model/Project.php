@@ -60,8 +60,8 @@ class Project extends AbstractModel
      */
     protected static function booted(): void
     {
-        static::saved(fn (Project $project) => \ErnestDefoe\Projects\FeaturedProject::refresh($project->user_id));
-        static::deleted(fn (Project $project) => \ErnestDefoe\Projects\FeaturedProject::refresh($project->user_id));
+        static::saved(fn (Project $project) => \ErnestDefoe\Projects\FeaturedProject::queue($project->user_id, $project->getConnection()));
+        static::deleted(fn (Project $project) => \ErnestDefoe\Projects\FeaturedProject::queue($project->user_id, $project->getConnection()));
     }
 
     /** @return BelongsTo<User, $this> */

@@ -238,14 +238,20 @@ class ProjectInput
         if (array_key_exists('coAuthors', $attrs)) {
             $project->coAuthors()->delete();
 
-            $position = 0;
-            foreach (array_slice(array_values((array) $attrs['coAuthors']), 0, 10) as $entry) {
-                $name = trim((string) $entry);
-                if ($name === '') {
-                    continue;
-                }
+            $names = array_values(array_filter(array_map(
+                fn ($entry) => trim((string) $entry),
+                array_slice(array_values((array) $attrs['coAuthors']), 0, 10)
+            ), fn (string $name) => $name !== ''));
 
-                $user = User::query()->where('username', $name)->first();
+            // One query for every username. Exact match first, then a
+            // case-insensitive one, so a MySQL collation match still links.
+            $users = $names ? User::query()->whereIn('username', $names)->get(['id', 'username']) : collect();
+            $exact = $users->keyBy('username');
+            $folded = $users->keyBy(fn (User $u) => mb_strtolower($u->username));
+
+            $position = 0;
+            foreach ($names as $name) {
+                $user = $exact->get($name) ?? $folded->get(mb_strtolower($name));
                 ProjectAuthor::create([
                     'project_id' => $project->id,
                     'user_id' => $user?->id,

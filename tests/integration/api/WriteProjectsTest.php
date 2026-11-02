@@ -223,4 +223,54 @@ class WriteProjectsTest extends ProjectsTestCase
         [, $user] = $this->api('GET', '/api/users/2');
         $this->assertSame(['id' => 1, 'title' => 'My Novel', 'slug' => 'my-novel', 'icon' => null, 'color' => null, 'categoryName' => 'Books'], $user['data']['attributes']['projectFeatured']);
     }
+
+    #[Test]
+    public function co_authors_link_forum_users_in_one_lookup_and_keep_other_names_as_text()
+    {
+        $this->app();
+        $db = $this->database();
+        $db->enableQueryLog();
+
+        [$status, $body] = $this->api('POST', '/api/projects', 1, ['title' => 'Team Work', 'coAuthors' => ['maker', 'mod', 'Ghost Writer', ' ', 'normal']]);
+        $this->assertSame(201, $status, json_encode($body));
+
+        $lookups = array_filter($db->getQueryLog(), fn ($q) => str_contains($q['query'], 'username'));
+        $db->disableQueryLog();
+        $this->assertCount(1, $lookups, 'Every co-author username is resolved in a single query');
+
+        $authors = $body['data']['coAuthors'];
+        $this->assertSame(['maker', 'mod'], [$authors[0]['username'], $authors[1]['username']]);
+        $this->assertSame(['name' => 'Ghost Writer'], $authors[2]);
+        $this->assertSame('normal', $authors[3]['username']);
+        $this->assertCount(4, $authors, 'A blank entry is skipped');
+    }
+
+    #[Test]
+    public function a_published_create_refreshes_the_authors_profile_snapshot_once_with_its_tag()
+    {
+        $this->app();
+        $db = $this->database();
+        $db->table('users')->where('id', 1)->update(['projects_featured' => null]);
+
+        // The harness runs after-commit callbacks inline. Defer them as a real
+        // request does: until the create's own transaction commits (level 1 is
+        // the test's wrapping transaction).
+        $db->setTransactionManager(new class extends \Illuminate\Database\DatabaseTransactionsManager {
+            public function afterCommitCallbacksShouldBeExecuted($level)
+            {
+                return $level === 1;
+            }
+        });
+        $db->enableQueryLog();
+
+        [$status] = $this->api('POST', '/api/projects', 1, ['title' => 'Brand New', 'categoryIds' => [2]]);
+        $this->assertSame(201, $status);
+
+        $writes = array_filter($db->getQueryLog(), fn ($q) => str_contains($q['query'], 'projects_featured') && str_starts_with(strtolower($q['query']), 'update'));
+        $db->disableQueryLog();
+        $this->assertCount(1, $writes, 'The two saves of one create write the snapshot once');
+
+        $snapshot = json_decode($db->table('users')->where('id', 1)->value('projects_featured'), true);
+        $this->assertSame(['Brand New', 'Games'], [$snapshot['title'], $snapshot['categoryName']], 'The snapshot sees the final primary tag');
+    }
 }

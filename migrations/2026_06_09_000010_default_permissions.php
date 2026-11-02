@@ -8,6 +8,11 @@ use Illuminate\Database\Schema\Builder;
  *   - Moderators (group 4) may moderate them.
  * Admins implicitly have everything. Admins can change all of this in the
  * Permissions grid afterwards.
+ *
+ * Not Migration::addPermissions() on purpose: `up` is the same idempotent
+ * insert that helper does, but `down` here removes every group's grant of the
+ * three project permissions (skipModeration included), so an uninstall leaves
+ * nothing behind; the helper's `down` only removes the two default rows.
  */
 return [
     'up' => function (Builder $schema) {
