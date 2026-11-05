@@ -6,6 +6,8 @@ import PostUser from 'flarum/forum/components/PostUser';
 import LinkButton from 'flarum/common/components/LinkButton';
 import Link from 'flarum/common/components/Link';
 
+export { default as extend } from './extend';
+
 declare const m: any;
 const t = (k: string, p?: any): any => app.translator.trans('ernestdefoe-projects.forum.' + k, p);
 

@@ -39,7 +39,8 @@
         "color": "#fff"
       },
       "optional-dependencies": [
-        "fof/badges"
+        "fof/badges",
+        "fof/photoswipe"
       ]
     },
     "flarum-cli": {
