@@ -10,6 +10,7 @@ use ErnestDefoe\Projects\Api\Controller;
 use ErnestDefoe\Projects\Api\ProjectInput;
 use ErnestDefoe\Projects\Api\Resource;
 use ErnestDefoe\Projects\Event\ProjectWasPublished;
+use ErnestDefoe\Projects\FeaturedProject;
 use ErnestDefoe\Projects\Listener\AwardBadgeOnPublish;
 use Flarum\Api\Context;
 use Flarum\Api\Resource\ForumResource;
@@ -63,7 +64,8 @@ return [
         ->serializeToForum('projectsExcerptLimit', 'ernestdefoe-projects.excerpt_limit', fn ($v) => ProjectInput::excerptLimit($v))
         ->serializeToForum('projectsMaxImageMb', 'ernestdefoe-projects.max_image_mb', fn ($v) => (int) ($v ?: 4))
         ->serializeToForum('projectsMinCategories', 'ernestdefoe-projects.min_categories', fn ($v) => (int) $v)
-        ->serializeToForum('projectsMaxCategories', 'ernestdefoe-projects.max_categories', fn ($v) => (int) $v),
+        ->serializeToForum('projectsMaxCategories', 'ernestdefoe-projects.max_categories', fn ($v) => (int) $v)
+        ->default('ernestdefoe-projects.show_featured_badge', true),
 
     // ---- Forum payload: permissions (the definitions are fetched by the
     //      projects page from GET /api/projects/config, not shipped everywhere)
@@ -75,11 +77,13 @@ return [
                 ->get(fn ($model, Context $context) => $context->getActor()->can('projects.moderate')),
         ]),
 
-    // ---- User payload: the featured-project snapshot (badge + profile) ------
+    // ---- User payload: the featured-project snapshot for the username badge,
+    //      left out entirely when the admin turns the badge off ---------------
     (new Extend\ApiResource(UserResource::class))
         ->fields(fn () => [
             Schema\Arr::make('projectFeatured')
                 ->nullable()
+                ->visible(fn () => FeaturedProject::badgeEnabled())
                 ->get(fn (User $user) => $user->getAttribute('projects_featured')
                     ? json_decode($user->getAttribute('projects_featured'), true)
                     : null),

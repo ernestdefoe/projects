@@ -3,6 +3,7 @@
 namespace ErnestDefoe\Projects;
 
 use ErnestDefoe\Projects\Model\Project;
+use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
 use Illuminate\Database\Connection;
 
@@ -14,6 +15,12 @@ use Illuminate\Database\Connection;
  */
 class FeaturedProject
 {
+    /** Whether the admin shows the badge beside usernames (on unless turned off). */
+    public static function badgeEnabled(): bool
+    {
+        return (bool) resolve(SettingsRepositoryInterface::class)->get('ernestdefoe-projects.show_featured_badge', true);
+    }
+
     /** @var array<int, true> users with a refresh already waiting on the commit */
     private static array $pending = [];
 

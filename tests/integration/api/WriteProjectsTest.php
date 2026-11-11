@@ -225,6 +225,23 @@ class WriteProjectsTest extends ProjectsTestCase
     }
 
     #[Test]
+    public function with_the_badge_turned_off_no_snapshot_is_sent_and_nothing_can_be_featured()
+    {
+        $this->setting('ernestdefoe-projects.show_featured_badge', '0');
+        $this->app();
+        $this->database()->table('users')->where('id', 2)->update(['projects_featured' => json_encode(['id' => 1, 'title' => 'My Novel', 'slug' => 'my-novel'])]);
+
+        [, $user] = $this->api('GET', '/api/users/2');
+        $this->assertArrayNotHasKey('projectFeatured', $user['data']['attributes']);
+
+        [, $project] = $this->api('GET', '/api/projects/1', 2);
+        $this->assertFalse($project['data']['canFeature'], 'The Feature on profile button is hidden');
+
+        [$status] = $this->api('POST', '/api/projects/1/feature', 2);
+        $this->assertSame(403, $status);
+    }
+
+    #[Test]
     public function co_authors_link_forum_users_in_one_lookup_and_keep_other_names_as_text()
     {
         $this->app();

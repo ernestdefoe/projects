@@ -24,6 +24,13 @@ export default [
       help: t('settings.allow_adhoc_links_help'),
       default: false,
     }))
+    .setting(() => ({
+      setting: 'ernestdefoe-projects.show_featured_badge',
+      type: 'boolean',
+      label: t('settings.show_featured_badge'),
+      help: t('settings.show_featured_badge_help'),
+      default: true,
+    }))
     // Badge picker is a live component (see PublishBadgeSetting) — a declarative
     // select can't refresh its options after the async badge fetch.
     .customSetting(() => m(PublishBadgeSetting), 5)

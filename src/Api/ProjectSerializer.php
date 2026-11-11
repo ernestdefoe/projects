@@ -2,6 +2,7 @@
 
 namespace ErnestDefoe\Projects\Api;
 
+use ErnestDefoe\Projects\FeaturedProject;
 use ErnestDefoe\Projects\Model\Project;
 use ErnestDefoe\Projects\Model\ProjectCategory;
 use Flarum\Formatter\Formatter;
@@ -215,10 +216,11 @@ class ProjectSerializer
         return self::canEdit($project, $actor);
     }
 
-    /** The owner may feature their own published project on their profile. */
+    /** The owner may feature their own published project, while the badge is shown. */
     public static function canFeature(Project $project, ?User $actor): bool
     {
-        return $actor && ! $actor->isGuest()
+        return FeaturedProject::badgeEnabled()
+            && $actor && ! $actor->isGuest()
             && $project->user_id && (int) $actor->id === (int) $project->user_id
             && $project->isPublished();
     }
