@@ -1,5 +1,6 @@
 import app from 'flarum/forum/app';
-import { extend } from 'flarum/common/extend';
+import { extend, override } from 'flarum/common/extend';
+import ModalManagerState from 'flarum/common/states/ModalManagerState';
 import IndexSidebar from 'flarum/forum/components/IndexSidebar';
 import UserPage from 'flarum/forum/components/UserPage';
 import PostUser from 'flarum/forum/components/PostUser';
@@ -16,6 +17,12 @@ app.initializers.add('ernestdefoe/projects', () => {
   app.routes['projects'] = { path: '/projects', component: () => import('./components/ProjectsPage') };
   app.routes['projects.show'] = { path: '/projects/p/:slug', component: () => import('./components/ProjectPage') };
   app.routes['user.projects'] = { path: '/u/:username/projects', component: () => import('./components/UserProjectsPage') };
+
+  // A dialog opened over the project form (FoF Upload's file-name prompt, say)
+  // stacks on top instead of replacing it, so what was written isn't lost.
+  override(ModalManagerState.prototype, 'show', function (this: any, original: any, componentClass: any, attrs: any, stack = false) {
+    return original(componentClass, attrs, stack || !!this.modal?.componentClass?.keepsOthersOnTop);
+  });
 
   // Sidebar nav link (sits with "All Discussions").
   extend(IndexSidebar.prototype, 'navItems', function (items: any) {

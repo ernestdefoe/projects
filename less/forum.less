@@ -537,6 +537,9 @@
 
     // We provide the form's own submit button — hide the editor's.
     .item-submit { display: none; }
+    // FoF Upload's media manager opens as a window of its own, which would close
+    // this form and lose what was written. Its upload button inserts in place.
+    .item-fof-upload-media { display: none; }
   }
 
   // Flarum-styled dropdown (StyledSelect) — a real Dropdown menu instead of a

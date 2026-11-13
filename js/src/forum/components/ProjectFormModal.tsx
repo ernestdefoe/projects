@@ -21,6 +21,9 @@ export interface ProjectFormModalAttrs extends IInternalModalAttrs {
  * so it adapts to whatever a community has set up.
  */
 export default class ProjectFormModal extends Modal<ProjectFormModalAttrs> {
+  // Read by the ModalManager override in forum/index.ts.
+  static keepsOthersOnTop = true;
+
   cfg = config();
   editing: Project | null = null;
 
