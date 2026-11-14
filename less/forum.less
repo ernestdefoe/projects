@@ -607,6 +607,12 @@
   .ProjectForm-linksBox .ProjectForm-link:last-child { margin-bottom: 14px; }
 }
 
+// Scribe puts its "/" menu on the page body, layered for the composer, which
+// sits below dialogs: while the project form is open, lift it above.
+body:has(.ProjectFormModal) .Scribe-slashMenu {
+  z-index: ~"calc(var(--zindex-modal) + 10)";
+}
+
 /* Co-authors */
 .ProjectForm-coAuthorList {
   display: flex;
